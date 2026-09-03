@@ -12,6 +12,7 @@ dist/
 .nuxt/
 
 # ========== 🔒 SECURITY — 凭据 ==========
+.env
 .env.local
 .env.*.local
 .env.production
