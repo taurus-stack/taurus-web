@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Security Vulnerability
+    url: mailto:taurusops@163.com
+    about: Please report security vulnerabilities privately via email
+  - name: Questions & Discussions
+    url: https://github.com/your-org/taurus-web/discussions
+    about: Please use GitHub Discussions for questions and general discussions

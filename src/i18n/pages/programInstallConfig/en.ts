@@ -1,0 +1,60 @@
+export default {
+	message: {
+		pages: {
+			programInstallConfig: {
+				table: {
+					columns: {
+						keyword: 'Keyword',
+						id: 'ID',
+						host: 'Host',
+						hostName: 'Host Name',
+						hostIp: 'Host IP',
+						programName: 'Program Name',
+						version: 'Target Version',
+						autoStart: 'Auto Start',
+						installed: 'Installed',
+						installing: 'Installing',
+						enabled: 'Enabled',
+						user: 'Run User',
+						group: 'Run Group',
+						maxRetries: 'Max Retries',
+						config: 'Config',
+						dispatchedAt: 'Dispatched At',
+						resultMessage: 'Result',
+					},
+				},
+				form: {
+					keywordPlaceholder: 'Enter keyword',
+					hostNamePlaceholder: 'Host Name',
+					hostIpPlaceholder: 'Host IP',
+					hostPlaceholder: 'Select host',
+					hostRequired: 'Please select a host',
+					programNamePlaceholder: 'e.g. taurus-executor',
+					programNameRequired: 'Please enter program name',
+					versionPlaceholder: 'Enter target version',
+					versionRequired: 'Please enter target version',
+					autoStartPlaceholder: 'Auto Start',
+					installedPlaceholder: 'Installed',
+					enabledPlaceholder: 'Enabled',
+					userPlaceholder: 'Empty means current user',
+					groupPlaceholder: 'Run group',
+					maxRetriesPlaceholder: 'Max retries',
+					configPlaceholder: 'JSON format config',
+					resultMessagePlaceholder: 'No result',
+				},
+				bool: {
+					yes: 'Yes',
+					no: 'No',
+				},
+				buttons: {
+					redispatch: 'Redispatch',
+				},
+				messages: {
+					redispatchConfirmTitle: 'Warning',
+					redispatchConfirm: 'Are you sure to redispatch install command: {programName} v{version}?',
+					redispatchSuccess: 'Redispatched, waiting for next heartbeat to resend',
+				},
+			},
+		},
+	},
+};

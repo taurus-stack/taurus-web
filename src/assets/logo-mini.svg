@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="frame" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#79bbff"/>
+      <stop offset="100%" stop-color="#337ecc"/>
+    </linearGradient>
+    <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#409eff"/>
+      <stop offset="100%" stop-color="#2b7fd4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Rounded square badge -->
+  <rect x="2" y="2" width="60" height="60" rx="14" ry="14" fill="#ffffff" stroke="url(#frame)" stroke-width="2"/>
+
+  <!-- Bull horns rising from the T -->
+  <!-- Left horn: curves up-left -->
+  <path d="M18 22 Q18 12 28 12 L28 18 Q22 18 22 24 Z" fill="url(#fill)"/>
+  <!-- Right horn: curves up-right (mirror) -->
+  <path d="M46 22 Q46 12 36 12 L36 18 Q42 18 42 24 Z" fill="url(#fill)"/>
+
+  <!-- T horizontal bar -->
+  <rect x="14" y="26" width="36" height="8" rx="3" ry="3" fill="url(#fill)"/>
+
+  <!-- T vertical stem -->
+  <rect x="28" y="30" width="8" height="22" rx="2" ry="2" fill="url(#fill)"/>
+
+  <!-- Star dot above -->
+  <circle cx="32" cy="9" r="2.2" fill="#409eff"/>
+</svg>

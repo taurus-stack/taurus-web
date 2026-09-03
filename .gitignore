@@ -1,0 +1,37 @@
+# ====================================================================
+# taurus-web — Vue3 + TypeScript + Element Plus + fast-crud
+# ====================================================================
+
+# ========== Node.js ==========
+node_modules/
+.pnpm-store/
+dist/
+.vite/
+.cache/
+.output/
+.nuxt/
+
+# ========== 🔒 SECURITY — 凭据 ==========
+.env.local
+.env.*.local
+.env.production
+
+# ========== 测试 ==========
+coverage/
+.nyc_output/
+
+# ========== 编辑器 ==========
+.DS_Store
+Thumbs.db
+
+# ========== 临时 ==========
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.vscode/
+
+# ========== 构建发布 ==========
+dist/
+dist-release/

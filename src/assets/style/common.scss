@@ -1,0 +1,14 @@
+.button-group-with-gap {
+  display: flex;
+  justify-content: space-between; /* 均匀分布 */
+  width: 100%; /* 或者指定宽度 */
+}
+
+.button-group-with-gap .el-button {
+  flex: 1; /* 让每个按钮占据相等的空间 */
+  margin-right: 10px; /* 指定右侧间距 */
+}
+
+.button-group-with-gap .el-button:last-child {
+  margin-right: 0; /* 最后一个按钮不需要右侧间距 */
+}

@@ -1,0 +1,60 @@
+export default {
+	message: {
+		pages: {
+			programInstallConfig: {
+				table: {
+					columns: {
+						keyword: '關鍵詞',
+						id: 'ID',
+						host: '所屬主機',
+						hostName: '主機名稱',
+						hostIp: '主機IP',
+						programName: '程序名稱',
+						version: '目標版本',
+						autoStart: '自動啟動',
+						installed: '已安裝',
+						installing: '安裝中',
+						enabled: '啟用',
+						user: '運行用戶',
+						group: '運行用戶組',
+						maxRetries: '最大重試次數',
+						config: '程序配置',
+						dispatchedAt: '指令下發時間',
+						resultMessage: '執行結果',
+					},
+				},
+				form: {
+					keywordPlaceholder: '請輸入關鍵詞',
+					hostNamePlaceholder: '主機名稱',
+					hostIpPlaceholder: '主機IP',
+					hostPlaceholder: '請選擇主機',
+					hostRequired: '請選擇主機',
+					programNamePlaceholder: '如 taurus-executor',
+					programNameRequired: '請輸入程序名稱',
+					versionPlaceholder: '請輸入目標版本',
+					versionRequired: '請輸入目標版本',
+					autoStartPlaceholder: '自動啟動',
+					installedPlaceholder: '已安裝',
+					enabledPlaceholder: '啟用',
+					userPlaceholder: '空表示當前用戶',
+					groupPlaceholder: '運行用戶組',
+					maxRetriesPlaceholder: '最大重試次數',
+					configPlaceholder: 'JSON格式配置',
+					resultMessagePlaceholder: '暫無執行結果',
+				},
+				bool: {
+					yes: '是',
+					no: '否',
+				},
+				buttons: {
+					redispatch: '重新下發',
+				},
+				messages: {
+					redispatchConfirmTitle: '提示',
+					redispatchConfirm: '確認重新下發安裝指令：{programName} v{version}？',
+					redispatchSuccess: '已重置下發狀態，等待下次心跳重新下發',
+				},
+			},
+		},
+	},
+};

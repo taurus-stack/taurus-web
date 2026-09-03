@@ -1,0 +1,55 @@
+export default {
+	message: {
+		pages: {
+			programInstallPolicy: {
+				table: {
+					columns: {
+						keyword: 'Keyword',
+						id: 'ID',
+						name: 'Policy Name',
+						programName: 'Program Name',
+						version: 'Target Version',
+						status: 'Status',
+						autoStart: 'Auto Start',
+						autoApply: 'Auto Apply',
+						priority: 'Priority',
+						matchedHostsCount: 'Matched Hosts',
+						appliedHostsCount: 'Applied Hosts',
+						user: 'Run User',
+						group: 'Run Group',
+						matchRules: 'Match Rules',
+						config: 'Config',
+					},
+					status: {
+						disabled: 'Disabled',
+						enabled: 'Enabled',
+						paused: 'Paused',
+					},
+				},
+				form: {
+					keywordPlaceholder: 'Enter keyword',
+					namePlaceholder: 'Enter policy name',
+					nameRequired: 'Please enter policy name',
+					nameSearchPlaceholder: 'Policy name',
+					programNamePlaceholder: 'e.g. taurus-executor',
+					programNameRequired: 'Please enter program name',
+					programNameSearchPlaceholder: 'Program name',
+					versionPlaceholder: 'Enter target version',
+					versionRequired: 'Please enter target version',
+					versionSearchPlaceholder: 'Target version',
+					statusPlaceholder: 'Select status',
+					statusSearchPlaceholder: 'Status',
+					priorityPlaceholder: 'Lower = higher priority',
+					userPlaceholder: 'Empty means current user',
+					groupPlaceholder: 'Run group',
+					matchRulesPlaceholder: 'JSON format, e.g. {"host_type": "linux", "status": 1}',
+					configPlaceholder: 'JSON format config',
+				},
+				bool: {
+					yes: 'Yes',
+					no: 'No',
+				},
+			},
+		},
+	},
+};

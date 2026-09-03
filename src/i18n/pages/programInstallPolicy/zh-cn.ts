@@ -1,0 +1,55 @@
+export default {
+	message: {
+		pages: {
+			programInstallPolicy: {
+				table: {
+					columns: {
+						keyword: '关键词',
+						id: 'ID',
+						name: '策略名称',
+						programName: '程序名称',
+						version: '目标版本',
+						status: '策略状态',
+						autoStart: '自动启动',
+						autoApply: '自动应用',
+						priority: '优先级',
+						matchedHostsCount: '匹配主机数',
+						appliedHostsCount: '已应用主机数',
+						user: '运行用户',
+						group: '运行用户组',
+						matchRules: '匹配规则',
+						config: '程序配置',
+					},
+					status: {
+						disabled: '未启用',
+						enabled: '已启用',
+						paused: '已暂停',
+					},
+				},
+				form: {
+					keywordPlaceholder: '请输入关键词',
+					namePlaceholder: '请输入策略名称',
+					nameRequired: '请输入策略名称',
+					nameSearchPlaceholder: '策略名称',
+					programNamePlaceholder: '如 taurus-executor',
+					programNameRequired: '请输入程序名称',
+					programNameSearchPlaceholder: '程序名称',
+					versionPlaceholder: '请输入目标版本',
+					versionRequired: '请输入目标版本',
+					versionSearchPlaceholder: '目标版本',
+					statusPlaceholder: '请选择策略状态',
+					statusSearchPlaceholder: '策略状态',
+					priorityPlaceholder: '数值越小优先级越高',
+					userPlaceholder: '空表示当前用户',
+					groupPlaceholder: '运行用户组',
+					matchRulesPlaceholder: 'JSON格式，如 {"host_type": "linux", "status": 1}',
+					configPlaceholder: 'JSON格式配置',
+				},
+				bool: {
+					yes: '是',
+					no: '否',
+				},
+			},
+		},
+	},
+};

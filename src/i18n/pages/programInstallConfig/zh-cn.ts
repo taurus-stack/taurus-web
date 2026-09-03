@@ -1,0 +1,60 @@
+export default {
+	message: {
+		pages: {
+			programInstallConfig: {
+				table: {
+					columns: {
+						keyword: '关键词',
+						id: 'ID',
+						host: '所属主机',
+						hostName: '主机名称',
+						hostIp: '主机IP',
+						programName: '程序名称',
+						version: '目标版本',
+						autoStart: '自动启动',
+						installed: '已安装',
+						installing: '安装中',
+						enabled: '启用',
+						user: '运行用户',
+						group: '运行用户组',
+						maxRetries: '最大重试次数',
+						config: '程序配置',
+						dispatchedAt: '指令下发时间',
+						resultMessage: '执行结果',
+					},
+				},
+				form: {
+					keywordPlaceholder: '请输入关键词',
+					hostNamePlaceholder: '主机名称',
+					hostIpPlaceholder: '主机IP',
+					hostPlaceholder: '请选择主机',
+					hostRequired: '请选择主机',
+					programNamePlaceholder: '如 taurus-executor',
+					programNameRequired: '请输入程序名称',
+					versionPlaceholder: '请输入目标版本',
+					versionRequired: '请输入目标版本',
+					autoStartPlaceholder: '自动启动',
+					installedPlaceholder: '已安装',
+					enabledPlaceholder: '启用',
+					userPlaceholder: '空表示当前用户',
+					groupPlaceholder: '运行用户组',
+					maxRetriesPlaceholder: '最大重试次数',
+					configPlaceholder: 'JSON格式配置',
+					resultMessagePlaceholder: '暂无执行结果',
+				},
+				bool: {
+					yes: '是',
+					no: '否',
+				},
+				buttons: {
+					redispatch: '重新下发',
+				},
+				messages: {
+					redispatchConfirmTitle: '提示',
+					redispatchConfirm: '确认重新下发安装指令：{programName} v{version}？',
+					redispatchSuccess: '已重置下发状态，等待下次心跳重新下发',
+				},
+			},
+		},
+	},
+};

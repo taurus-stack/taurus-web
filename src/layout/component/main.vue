@@ -1,0 +1,62 @@
+<template>
+	<el-main class="layout-main"
+		:style="isFixedHeader ? `height: calc(100% - ${setMainHeight})` : `minHeight: calc(100% - ${setMainHeight})`">
+		<el-scrollbar ref="layoutMainScrollbarRef" class="layout-main-scroll layout-backtop-header-fixed"
+			wrap-class="layout-main-scroll" view-class="layout-main-scroll">
+			<LayoutParentView />
+      <LayoutFooter v-if="isFooter" />
+		</el-scrollbar>
+		<el-backtop :target="setBacktopClass" />
+	</el-main>
+</template>
+
+<script setup lang="ts" name="layoutMain">
+import { defineAsyncComponent, onMounted, computed, ref } from 'vue';
+import { useRoute } from 'vue-router';
+import { storeToRefs } from 'pinia';
+import { useTagsViewRoutes } from '/@/stores/tagsViewRoutes';
+import { useThemeConfig } from '/@/stores/themeConfig';
+import { NextLoading } from '/@/utils/loading';
+
+// import component
+const LayoutParentView = defineAsyncComponent(() => import('/@/layout/routerView/parent.vue'));
+const LayoutFooter = defineAsyncComponent(() => import('/@/layout/footer/index.vue'));
+
+// define variables
+const layoutMainScrollbarRef = ref();
+const route = useRoute();
+const storesTagsViewRoutes = useTagsViewRoutes();
+const storesThemeConfig = useThemeConfig();
+const { themeConfig } = storeToRefs(storesThemeConfig);
+const { isTagsViewCurrenFull } = storeToRefs(storesTagsViewRoutes);
+
+// toggle footer
+const isFooter = computed(() => {
+	return themeConfig.value.isFooter && !route.meta.isIframe;
+});
+// pin header
+const isFixedHeader = computed(() => {
+	return themeConfig.value.isFixedHeader;
+});
+// set Backtop
+const setBacktopClass = computed(() => {
+	if (themeConfig.value.isFixedHeader) return `.layout-backtop-header-fixed .el-scrollbar__wrap`;
+	else return `.layout-backtop .el-scrollbar__wrap`;
+});
+// set main content height
+const setMainHeight = computed(() => {
+	if (isTagsViewCurrenFull.value) return '0px';
+	const { isTagsview, layout } = themeConfig.value;
+	if (isTagsview && layout !== 'classic') return '85px';
+	else return '51px';
+});
+// before mount
+onMounted(() => {
+	NextLoading.done(600);
+});
+
+// expose variables
+defineExpose({
+	layoutMainScrollbarRef,
+});
+</script>

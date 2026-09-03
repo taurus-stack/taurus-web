@@ -1,0 +1,1316 @@
+<template>
+  <EditionLockedPage feature="SCRIPT_APPROVAL_FLOW" label="脚本审批中心">
+  <div class="script-approval-rule-page">
+    <!-- Top header -->
+    <div class="page-header">
+      <div class="header-left">
+        <div class="title">
+          <h2>{{ $t('message.pages.scriptApproval.pageTitle') }}</h2>
+          <span class="desc">{{ $t('message.pages.scriptApproval.pageDesc') }}</span>
+        </div>
+        <div class="stats">
+          <div class="stat-item">
+            <div class="stat-icon total-icon">
+              <el-icon :size="16"><Document /></el-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ page.total }}</div>
+              <div class="stat-label">{{ $t('message.pages.scriptApproval.statTotal') }}</div>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon active-icon">
+              <el-icon :size="16"><CircleCheck /></el-icon>
+            </div>
+            <div class="stat-info">
+              <div class="stat-value">{{ activeCount }}</div>
+              <div class="stat-label">{{ $t('message.pages.scriptApproval.statActive') }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <el-button type="primary" @click="openRuleForm(null)">
+          <el-icon><Plus /></el-icon>
+          {{ $t('message.pages.scriptApproval.btnAddRule') }}
+        </el-button>
+        <el-button @click="loadRuleList">
+          <el-icon><Refresh /></el-icon>
+          {{ $t('message.pages.scriptApproval.btnRefresh') }}
+        </el-button>
+      </div>
+    </div>
+
+    <!-- Modern card list -->
+    <div class="card-list-wrap">
+      <div v-if="ruleList.length === 0" class="empty-state">
+        <el-empty :description="$t('message.pages.scriptApproval.emptyDesc')">
+          <el-button type="primary" @click="openRuleForm(null)">{{ $t('message.pages.scriptApproval.emptyCreate') }}</el-button>
+        </el-empty>
+      </div>
+      <div v-else class="rule-cards">
+        <div
+          v-for="row in ruleList"
+          :key="row.id"
+          class="rule-card"
+          :class="{ 'card-inactive': !row.is_active }"
+        >
+          <!-- Left priority color bar -->
+          <div class="card-accent" :style="{ background: getPriorityColor(row.priority) }"></div>
+          
+          <div class="card-body">
+            <!-- Header: name + status + tags -->
+            <div class="card-header">
+              <div class="card-title-row">
+                <h3 class="rule-name">{{ row.name }}</h3>
+                <el-tag
+                  v-if="!row.is_active"
+                  type="info"
+                  effect="plain"
+                  class="status-tag"
+                >
+                  <span class="status-dot"></span>{{ $t('message.pages.scriptApproval.statusInactive') }}
+                </el-tag>
+                <el-tag v-else type="success" effect="plain" class="status-tag active">
+                  <span class="status-dot"></span>{{ $t('message.pages.scriptApproval.statusActive') }}
+                </el-tag>
+              </div>
+              <div class="card-meta">
+                <el-tag size="small" type="warning" effect="light">{{ $t('message.pages.scriptApproval.priorityLabel', { priority: row.priority }) }}</el-tag>
+                <el-tag size="small" effect="plain">{{ $t('message.pages.scriptApproval.conditionGroups', { count: (row.condition_groups || []).length }) }}</el-tag>
+                <el-tag size="small" type="info" effect="plain">{{ $t('message.pages.scriptApproval.approvalNodes', { count: row.node_count }) }}</el-tag>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div v-if="row.description" class="card-desc">
+              {{ row.description }}
+            </div>
+
+            <!-- Condition group overview (chip form) -->
+            <div class="card-chips">
+              <div v-for="(group, gIdx) in (row.condition_groups || []).slice(0, 2)" :key="gIdx" class="group-chip">
+                <span class="chip-label">{{ $t('message.pages.scriptApproval.groupTitle', { index: Number(gIdx) + 1 }) }}</span>
+                <span class="chip-count">{{ $t('message.pages.scriptApproval.conditionsCount', { count: Object.keys(group).length }) }}</span>
+              </div>
+              <div v-if="(row.condition_groups || []).length > 2" class="group-chip more">
+                {{ $t('message.pages.scriptApproval.moreGroups', { count: Number((row.condition_groups || []).length) - 2 }) }}
+              </div>
+            </div>
+
+            <!-- Footer: creator info + actions -->
+            <div class="card-footer">
+              <div class="card-creator">
+                <el-icon><User /></el-icon>
+                <span>{{ row.creator_name || $t('message.pages.scriptApproval.system') }}</span>
+                <span class="card-time">{{ formatTime(row.create_datetime) }}</span>
+              </div>
+              <div class="card-actions">
+                <el-button type="primary" link size="small" @click="openNodeManager(row)">
+                  <el-icon><Connection /></el-icon>{{ $t('message.pages.scriptApproval.nodeManage') }}
+                </el-button>
+                <el-button link size="small" @click="openRuleForm(row)">
+                  <el-icon><Edit /></el-icon>{{ $t('message.pages.scriptApproval.actionEdit') }}
+                </el-button>
+                <el-button
+                  link
+                  size="small"
+                  :type="row.is_active ? 'warning' : 'success'"
+                  @click="toggleRuleStatus(row)"
+                >
+                  {{ row.is_active ? $t('message.pages.scriptApproval.actionDisable') : $t('message.pages.scriptApproval.actionToggle') }}
+                </el-button>
+                <el-button link size="small" type="danger" @click="deleteRule(row)">
+                  <el-icon><Delete /></el-icon>{{ $t('message.pages.scriptApproval.actionDelete') }}
+                </el-button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div v-if="ruleList.length > 0" class="pagination-bar">
+        <el-pagination
+          v-model:current-page="page.current"
+          v-model:page-size="page.size"
+          :total="page.total"
+          layout="prev, pager, next, total"
+          background
+          class="modern-pagination"
+          @current-change="loadRuleList"
+          @size-change="loadRuleList"
+        />
+      </div>
+    </div>
+
+    <!-- Rule form dialog (preserved as-is, minor style tweaks only) -->
+    <el-dialog
+      v-model="ruleFormVisible"
+      :title="ruleForm.id ? $t('message.pages.scriptApproval.ruleFormTitleEdit') : $t('message.pages.scriptApproval.ruleFormTitleNew')"
+      width="800px"
+      top="5vh"
+      destroy-on-close
+      class="modern-dialog"
+    >
+      <el-form :model="ruleForm" :rules="ruleFormRules" ref="ruleFormRef" label-width="100px">
+        <el-form-item  :label="$t('message.pages.scriptApproval.ruleNameLabel')" prop="name">
+          <el-input v-model="ruleForm.name" :placeholder="$t('message.pages.scriptApproval.ruleNamePlaceholder')" maxlength="100" show-word-limit />
+        </el-form-item>
+        <el-form-item :label="$t('message.pages.scriptApproval.ruleDescLabel')">
+          <el-input v-model="ruleForm.description" type="textarea" :rows="2" :placeholder="$t('message.pages.scriptApproval.ruleDescPlaceholder')" maxlength="500" show-word-limit />
+        </el-form-item>
+        <el-form-item  :label="$t('message.pages.scriptApproval.rulePriorityLabel')" prop="priority">
+          <el-input-number v-model="ruleForm.priority" :min="1" :max="9999" />
+          <span style="margin-left: 12px; font-size: 12px; color: #909399">{{ $t('message.pages.scriptApproval.rulePriorityHint') }}</span>
+        </el-form-item>
+        <el-form-item :label="$t('message.pages.scriptApproval.ruleStatusLabel')">
+          <el-switch v-model="ruleForm.is_active" :active-text="$t('message.pages.scriptApproval.actionToggle')" :inactive-text="$t('message.pages.scriptApproval.actionDisable')" />
+        </el-form-item>
+
+        <el-form-item :label="$t('message.pages.scriptApproval.ruleConditionGroupLabel')">
+          <div class="condition-groups">
+            <div v-if="ruleForm.condition_groups.length > 1" class="or-label">
+              <el-tag type="warning" effect="dark">{{ $t('message.pages.scriptApproval.ruleOrHint') }}</el-tag>
+            </div>
+
+            <div
+              v-for="(group, gIndex) in ruleForm.condition_groups"
+              :key="gIndex"
+              class="condition-group"
+            >
+              <div class="group-header">
+                <span class="group-title">{{ $t('message.pages.scriptApproval.ruleGroupTitle') }} {{ gIndex + 1 }}</span>
+                <el-tag size="small" type="info" effect="plain">{{ $t('message.pages.scriptApproval.ruleAndHint') }}</el-tag>
+                <el-button
+                  v-if="ruleForm.condition_groups.length > 1"
+                  type="danger"
+                  size="small"
+                  text
+                  @click="removeConditionGroup(gIndex)"
+                >
+                  {{ $t('message.pages.scriptApproval.ruleRemoveGroup') }}
+                </el-button>
+              </div>
+
+              <div class="condition-list">
+                <div
+                  v-for="(cond, cIndex) in group.conditions"
+                  :key="cIndex"
+                  class="condition-item"
+                >
+                  <el-select v-model="cond.field" style="width: 150px" @change="onConditionFieldChange(Number(gIndex), Number(cIndex))">
+                    <el-option :label="$t('message.pages.scriptApproval.fieldCategory')" value="category_ids" />
+                    <el-option :label="$t('message.pages.scriptApproval.fieldScriptType')" value="script_types" />
+                    <el-option :label="$t('message.pages.scriptApproval.fieldRiskLevel')" value="risk_levels" />
+                    <el-option :label="$t('message.pages.scriptApproval.fieldMinRiskPoints')" value="min_risk_points" />
+                    <el-option :label="$t('message.pages.scriptApproval.fieldAuthType')" value="auth_types" />
+                  </el-select>
+
+                  <div class="condition-value">
+                    <el-select
+                      v-if="cond.field === 'category_ids'"
+                      v-model="cond.value"
+                      multiple
+                      filterable
+                      :placeholder="$t('message.pages.scriptApproval.selectCategoryPlaceholder')"
+                      style="width: 100%"
+                    >
+                      <el-option
+                        v-for="cat in categoryOptions"
+                        :key="cat.id"
+                        :label="cat.name"
+                        :value="cat.id"
+                      />
+                    </el-select>
+
+                    <el-select
+                      v-else-if="cond.field === 'script_types'"
+                      v-model="cond.value"
+                      multiple
+                      :placeholder="$t('message.pages.scriptApproval.selectScriptTypePlaceholder')"
+                      style="width: 100%"
+                    >
+                      <el-option label="Shell" value="Shell" />
+                      <el-option label="Python3" value="Python3" />
+                      <el-option label="PowerShell" value="PowerShell" />
+                      <el-option label="Bat" value="Bat" />
+                      <el-option label="SQL" value="SQL" />
+                    </el-select>
+
+                    <el-select
+                      v-else-if="cond.field === 'risk_levels'"
+                      v-model="cond.value"
+                      multiple
+                      :placeholder="$t('message.pages.scriptApproval.selectRiskLevelPlaceholder')"
+                      style="width: 100%"
+                    >
+                      <el-option :label="$t('message.pages.scriptApproval.riskHigh')" value="high" />
+                      <el-option :label="$t('message.pages.scriptApproval.riskMedium')" value="medium" />
+                      <el-option :label="$t('message.pages.scriptApproval.riskLow')" value="low" />
+                    </el-select>
+
+                    <el-select
+                      v-else-if="cond.field === 'auth_types'"
+                      v-model="cond.value"
+                      multiple
+                      :placeholder="$t('message.pages.scriptApproval.selectAuthTypePlaceholder')"
+                      style="width: 100%"
+                    >
+                      <el-option :label="$t('message.pages.scriptApproval.authPrivateLabel')" value="private" />
+                      <el-option :label="$t('message.pages.scriptApproval.authPublicLabel')" value="public" />
+                    </el-select>
+
+                    <el-input-number
+                      v-else-if="cond.field === 'min_risk_points'"
+                      v-model="cond.value"
+                      :min="1"
+                      :max="20"
+                      style="width: 100%"
+                    />
+                  </div>
+
+                  <el-button type="danger" text @click="removeCondition(gIndex as number, cIndex as number)">
+                    <el-icon><Delete /></el-icon>
+                  </el-button>
+                </div>
+
+                <el-button size="small" @click="addCondition(gIndex)">
+                  <el-icon><Plus /></el-icon>
+                  {{ $t('message.pages.scriptApproval.ruleAddCondition') }}
+                </el-button>
+              </div>
+            </div>
+
+            <el-button type="primary" plain @click="addConditionGroup">
+              <el-icon><Plus /></el-icon>
+              {{ $t('message.pages.scriptApproval.ruleAddConditionGroupOr') }}
+            </el-button>
+          </div>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="ruleFormVisible = false">{{ $t('message.pages.scriptApproval.ruleCancel') }}</el-button>
+        <el-button type="primary" @click="saveRule" :loading="saving">{{ $t('message.pages.scriptApproval.ruleConfirm') }}</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- Node management dialog (Timeline view) -->
+    <el-dialog
+      v-model="nodeDialogVisible"
+      :title="`${ $t('message.pages.scriptApproval.nodeDialogTitle', { name: currentRule?.name }) }`"
+      width="720px"
+      top="5vh"
+      destroy-on-close
+      class="modern-dialog"
+    >
+      <div class="node-timeline-manager">
+        <div class="node-header">
+          <div class="node-header-info">
+            <el-icon :size="20" color="#409eff"><Connection /></el-icon>
+            <span>{{ $t('message.pages.scriptApproval.nodeFlowDesc') }}</span>
+          </div>
+          <el-button type="primary" @click="openNodeForm(null)">
+            <el-icon><Plus /></el-icon>
+            {{ $t('message.pages.scriptApproval.nodeAdd') }}
+          </el-button>
+        </div>
+
+        <div v-loading="nodeLoading" class="timeline-container">
+          <div v-if="nodeList.length === 0" class="empty-state">
+            <el-empty :description="$t('message.pages.scriptApproval.nodeEmptyDesc')" />
+          </div>
+          
+          <div v-else class="approval-timeline">
+            <div
+              v-for="(node, index) in nodeList"
+              :key="node.id"
+              class="timeline-item"
+            >
+              <div class="timeline-node">
+                <div class="node-order">{{ index + 1 }}</div>
+              </div>
+              
+              <div v-if="index < nodeList.length - 1" class="timeline-connector"></div>
+              
+              <div class="node-card">
+                <div class="node-card-header">
+                  <div class="node-title-row">
+                    <h4>{{ node.node_name }}</h4>
+                    <el-tag size="small" :type="getModeTagType(node.approval_mode)">
+                      {{ node.approval_mode_display }}
+                    </el-tag>
+                  </div>
+                  <div class="node-actions">
+                    <el-button
+                      size="small"
+                      text
+                      :disabled="index === 0"
+                      @click="moveNode(index, -1)"
+                    >
+                      <el-icon><ArrowUp /></el-icon>
+                    </el-button>
+                    <el-button
+                      size="small"
+                      text
+                      :disabled="index === nodeList.length - 1"
+                      @click="moveNode(index, 1)"
+                    >
+                      <el-icon><ArrowDown /></el-icon>
+                    </el-button>
+                    <el-button size="small" text @click="openNodeForm(node)">
+                      <el-icon><Edit /></el-icon>
+                    </el-button>
+                    <el-button size="small" text type="danger" @click="deleteNode(node)">
+                      <el-icon><Delete /></el-icon>
+                    </el-button>
+                  </div>
+                </div>
+                
+                <div class="node-card-body">
+                  <el-descriptions :column="2" size="small" border>
+                    <el-descriptions-item :label="$t('message.pages.scriptApproval.nodeApproverTypeLabel')" :span="2">
+                      {{ node.approver_type_display }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="$t('message.pages.scriptApproval.nodeStepOrderLabel')">
+                      {{ $t('message.pages.scriptApproval.nodeStepValue', { step: node.step_order }) }}
+                    </el-descriptions-item>
+                    <el-descriptions-item :label="$t('message.pages.scriptApproval.nodeIdLabel')">
+                      {{ node.id }}
+                    </el-descriptions-item>
+                  </el-descriptions>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <template #footer>
+        <el-button @click="nodeDialogVisible = false">{{ $t('message.pages.scriptApproval.nodeClose') }}</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- Node form dialog -->
+    <el-dialog
+      v-model="nodeFormVisible"
+      :title="nodeForm.id ? $t('message.pages.scriptApproval.nodeFormTitleEdit') : $t('message.pages.scriptApproval.nodeFormTitleNew')"
+      width="560px"
+      destroy-on-close
+      class="modern-dialog"
+    >
+      <el-form :model="nodeForm" :rules="nodeFormRules" ref="nodeFormRef" label-width="100px">
+        <el-form-item  :label="$t('message.pages.scriptApproval.nodeNameLabel')" prop="node_name">
+          <el-input v-model="nodeForm.node_name" :placeholder="$t('message.pages.scriptApproval.nodeNamePlaceholder')" maxlength="50" show-word-limit />
+        </el-form-item>
+        <el-form-item  :label="$t('message.pages.scriptApproval.nodeApproverTypeLabel')" prop="approver_type">
+          <el-select v-model="nodeForm.approver_type" style="width: 100%" @change="onApproverTypeChange">
+            <el-option :label="$t('message.pages.scriptApproval.nodeApproverTypeCategoryReviewer')" value="category_reviewer" />
+            <el-option :label="$t('message.pages.scriptApproval.nodeApproverTypeSpecificUsers')" value="specific_users" />
+            <el-option :label="$t('message.pages.scriptApproval.nodeApproverTypeRole')" value="role" />
+            <el-option :label="$t('message.pages.scriptApproval.nodeApproverTypeSubmitterManager')" value="submitter_manager" />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item v-if="nodeForm.approver_type === 'specific_users'" :label="$t('message.pages.scriptApproval.nodeApproverTypeSpecificUsers')">
+          <el-select
+            v-model="nodeForm.approver_config.user_ids"
+            multiple
+            filterable
+            :placeholder="$t('message.pages.scriptApproval.nodeSelectApproverPlaceholder')"
+            style="width: 100%"
+          >
+            <el-option
+              v-for="user in userList"
+              :key="user.id"
+              :label="user.username + (user.name ? ` (${user.name})` : '')"
+              :value="user.id"
+            />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item v-if="nodeForm.approver_type === 'role'" :label="$t('message.pages.scriptApproval.nodeApproverTypeRole')">
+          <el-select
+            v-model="nodeForm.approver_config.role_codes"
+            multiple
+            filterable
+            :placeholder="$t('message.pages.scriptApproval.nodeSelectRolePlaceholder')"
+            style="width: 100%"
+          >
+            <el-option :label="$t('message.pages.scriptApproval.roleSuperAdmin')" value="superadmin" />
+            <el-option :label="$t('message.pages.scriptApproval.roleAdmin')" value="admin" />
+            <el-option :label="$t('message.pages.scriptApproval.roleOps')" value="ops" />
+            <el-option :label="$t('message.pages.scriptApproval.roleDev')" value="dev" />
+            <el-option :label="$t('message.pages.scriptApproval.roleDba')" value="dba" />
+            <el-option :label="$t('message.pages.scriptApproval.roleSecurity')" value="security" />
+          </el-select>
+        </el-form-item>
+
+        <el-form-item v-if="nodeForm.approver_type === 'submitter_manager'" :label="$t('message.pages.scriptApproval.nodeLevelLabel')">
+          <el-input-number v-model="nodeForm.approver_config.levels" :min="1" :max="5" />
+          <span style="margin-left: 12px; font-size: 12px; color: #909399">{{ $t('message.pages.scriptApproval.nodeLevelHint') }}</span>
+        </el-form-item>
+
+        <el-form-item  :label="$t('message.pages.scriptApproval.nodeModeLabel')" prop="approval_mode">
+          <el-radio-group v-model="nodeForm.approval_mode">
+            <el-radio value="any">{{ $t('message.pages.scriptApproval.nodeModeAny') }}</el-radio>
+            <el-radio value="all">{{ $t('message.pages.scriptApproval.nodeModeAll') }}</el-radio>
+            <el-radio value="first">{{ $t('message.pages.scriptApproval.nodeModeFirst') }}</el-radio>
+          </el-radio-group>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="nodeFormVisible = false">{{ $t('message.pages.scriptApproval.nodeFormCancel') }}</el-button>
+        <el-button type="primary" @click="saveNode" :loading="nodeSaving">{{ $t('message.pages.scriptApproval.nodeFormConfirm') }}</el-button>
+      </template>
+    </el-dialog>
+  </div>
+  </EditionLockedPage>
+</template>
+
+<script setup lang="ts" name="ScriptApprovalRule">
+import { ref, reactive, onMounted, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
+import EditionLockedPage from '/@/components/EditionLockedPage.vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { 
+  Plus, Refresh, Delete, Document, CircleCheck, 
+  User, Connection, Edit, ArrowUp, ArrowDown 
+} from '@element-plus/icons-vue';
+import { request } from '/@/utils/service';
+import * as ruleApi from '/@/api/taurus/script-library/approval-rule';
+import * as nodeApi from '/@/api/taurus/script-library/approval-node';
+import * as categoryApi from '/@/api/taurus/script-library/category';
+
+const { t } = useI18n();
+
+const loading = ref(false);
+const saving = ref(false);
+const nodeLoading = ref(false);
+const nodeSaving = ref(false);
+
+const ruleList = ref<any[]>([]);
+const page = reactive({ current: 1, size: 10, total: 0 });
+
+const activeCount = computed(() => {
+  return ruleList.value.filter(r => r.is_active).length;
+});
+
+function getPriorityColor(priority: number) {
+  if (priority <= 10) return '#f56c6c';
+  if (priority <= 50) return '#e6a23c';
+  if (priority <= 100) return '#409eff';
+  return '#67c23a';
+}
+
+function formatTime(dateStr: string) {
+  if (!dateStr) return '-';
+  const date = new Date(dateStr);
+  return date.toLocaleString('zh-CN', { 
+    year: 'numeric', month: '2-digit', day: '2-digit', 
+    hour: '2-digit', minute: '2-digit' 
+  });
+}
+
+function getModeTagType(mode: string) {
+  switch (mode) {
+    case 'any': return 'success';
+    case 'all': return 'warning';
+    case 'first': return 'info';
+    default: return '';
+  }
+}
+
+const ruleFormVisible = ref(false);
+const ruleFormRef = ref<any>(null);
+const ruleForm = reactive({
+  id: null as number | null,
+  name: '',
+  description: '',
+  priority: 100,
+  is_active: true,
+  condition_groups: [] as any[],
+});
+
+const ruleFormRules = {
+  name: [
+    { required: true, message: t('message.pages.scriptApproval.ruleNameRequired'), trigger: 'blur' },
+    { min: 2, max: 100, message: t('message.pages.scriptApproval.ruleNameLength'), trigger: 'blur' },
+  ],
+};
+
+const categoryOptions = ref<any[]>([]);
+const userList = ref<any[]>([]);
+
+const nodeDialogVisible = ref(false);
+const nodeFormVisible = ref(false);
+const nodeFormRef = ref<any>(null);
+const currentRule = ref<any>(null);
+const nodeList = ref<any[]>([]);
+const nodeForm = reactive({
+  id: null as number | null,
+  rule: null as number | null,
+  node_name: '',
+  approver_type: 'category_reviewer',
+  approver_config: {} as any,
+  approval_mode: 'any',
+  step_order: 1,
+});
+
+const nodeFormRules = {
+  node_name: [
+    { required: true, message: t('message.pages.scriptApproval.nodeNameRequired'), trigger: 'blur' },
+  ],
+  approver_type: [
+    { required: true, message: t('message.pages.scriptApproval.nodeApproverTypeRequired'), trigger: 'change' },
+  ],
+  approval_mode: [
+    { required: true, message: t('message.pages.scriptApproval.nodeModeRequired'), trigger: 'change' },
+  ],
+};
+
+onMounted(() => {
+  loadRuleList();
+  loadCategories();
+  loadUsers();
+});
+
+async function loadCategories() {
+  try {
+    const res = await categoryApi.GetTree();
+    const cats: any[] = [];
+    const flatten = (list: any[]) => {
+      list.forEach((item) => {
+        if (item.category_type !== 'system') {
+          cats.push(item);
+        }
+        if (item.children?.length) {
+          flatten(item.children);
+        }
+      });
+    };
+    flatten(res.data || []);
+    categoryOptions.value = cats;
+  } catch (e) {
+    // silently ignore
+  }
+}
+
+async function loadUsers() {
+  try {
+    const res: any = await request({
+      url: '/api/system/user/',
+      method: 'get',
+      params: { limit: 200 },
+    });
+    userList.value = res.data?.results || res.data || [];
+  } catch (e) {
+    // silently ignore
+  }
+}
+
+async function loadRuleList() {
+  loading.value = true;
+  try {
+    const res = await ruleApi.GetList({
+      page: page.current,
+      limit: page.size,
+    });
+    ruleList.value = res.data?.results || res.data || [];
+    page.total = res.data?.total || ruleList.value.length;
+  } catch (e: any) {
+    ElMessage.error(e.message || t('message.pages.scriptApproval.msgLoadListFail'));
+  } finally {
+    loading.value = false;
+  }
+}
+
+function openRuleForm(row: any) {
+  if (ruleFormRef.value) {
+    ruleFormRef.value.clearValidate();
+  }
+  if (row && row.id) {
+    ruleForm.id = row.id;
+    ruleForm.name = row.name;
+    ruleForm.description = row.description || '';
+    ruleForm.priority = row.priority ?? 100;
+    ruleForm.is_active = row.is_active !== false;
+    ruleForm.condition_groups = (row.condition_groups || []).map((g: any) => ({
+      conditions: Object.entries(g).map(([field, value]) => ({ field, value })),
+    }));
+    if (ruleForm.condition_groups.length === 0) {
+      ruleForm.condition_groups = [{ conditions: [] }];
+    }
+  } else {
+    ruleForm.id = null;
+    ruleForm.name = '';
+    ruleForm.description = '';
+    ruleForm.priority = 100;
+    ruleForm.is_active = true;
+    ruleForm.condition_groups = [{ conditions: [] }];
+  }
+  ruleFormVisible.value = true;
+}
+
+function addConditionGroup() {
+  ruleForm.condition_groups.push({ conditions: [] });
+}
+
+function removeConditionGroup(index: number) {
+  ruleForm.condition_groups.splice(index, 1);
+}
+
+function addCondition(groupIndex: number) {
+  ruleForm.condition_groups[groupIndex].conditions.push({
+    field: 'script_types',
+    value: [],
+  });
+}
+
+function removeCondition(groupIndex: number, condIndex: number) {
+  ruleForm.condition_groups[groupIndex].conditions.splice(condIndex, 1);
+}
+
+function onConditionFieldChange(groupIndex: number, condIndex: number) {
+  const cond = ruleForm.condition_groups[groupIndex].conditions[condIndex];
+  if (cond.field === 'min_risk_points') {
+    cond.value = 1;
+  } else {
+    cond.value = [];
+  }
+}
+
+function buildConditionGroups() {
+  // Do not filter empty groups: backend treats empty groups/lists as "match all", filtering would break mixed-scenario semantics
+  return ruleForm.condition_groups.map((g: any) => {
+    const group: any = {};
+    g.conditions.forEach((c: any) => {
+      group[c.field] = c.value;
+    });
+    return group;
+  });
+}
+
+async function saveRule() {
+  if (!ruleFormRef.value) return;
+  try {
+    await ruleFormRef.value.validate();
+  } catch {
+    return;
+  }
+
+  const condition_groups = buildConditionGroups();
+
+  saving.value = true;
+  try {
+    if (ruleForm.id) {
+      await ruleApi.UpdateObj({
+        id: ruleForm.id,
+        name: ruleForm.name,
+        description: ruleForm.description,
+        priority: ruleForm.priority,
+        is_active: ruleForm.is_active,
+        condition_groups,
+      });
+      ElMessage.success(t('message.pages.scriptApproval.msgUpdateSuccess'));
+    } else {
+      await ruleApi.AddObj({
+        name: ruleForm.name,
+        description: ruleForm.description,
+        priority: ruleForm.priority,
+        is_active: ruleForm.is_active,
+        condition_groups,
+      });
+      ElMessage.success(t('message.pages.scriptApproval.msgCreateSuccess'));
+    }
+    ruleFormVisible.value = false;
+    loadRuleList();
+  } catch (e: any) {
+    ElMessage.error(e.message || t('message.pages.scriptApproval.msgSaveFail'));
+  } finally {
+    saving.value = false;
+  }
+}
+
+async function toggleRuleStatus(row: any) {
+  try {
+    const action = row.is_active ? t('message.pages.scriptApproval.actionDisable') : t('message.pages.scriptApproval.actionToggle');
+    await ElMessageBox.confirm(t('message.pages.scriptApproval.msgToggleConfirm', { action, name: row.name }), t('message.pages.scriptApproval.msgConfirmTitle'), { type: 'warning' });
+    await ruleApi.UpdateObj({
+      id: row.id,
+      is_active: !row.is_active,
+    });
+    ElMessage.success(t('message.pages.scriptApproval.msgToggleSuccess', { action }));
+    loadRuleList();
+  } catch (e: any) {
+    if (e !== 'cancel') {
+      ElMessage.error(e.message || t('message.pages.scriptApproval.msgActionFail'));
+    }
+  }
+}
+
+async function deleteRule(row: any) {
+  try {
+    await ElMessageBox.confirm(t('message.pages.scriptApproval.msgDeleteConfirmMsg', { name: row.name }), t('message.pages.scriptApproval.msgDeleteConfirmTitle'), {
+      type: 'error',
+      confirmButtonText: t('message.pages.scriptApproval.msgConfirmDeleteBtn'),
+    });
+    await ruleApi.DelObj(row.id);
+    ElMessage.success(t('message.pages.scriptApproval.msgDeleteSuccess'));
+    loadRuleList();
+  } catch (e: any) {
+    if (e !== 'cancel') {
+      ElMessage.error(e.message || t('message.pages.scriptApproval.msgDeleteFail'));
+    }
+  }
+}
+
+async function openNodeManager(row: any) {
+  currentRule.value = row;
+  nodeDialogVisible.value = true;
+  await loadNodeList(row.id);
+}
+
+async function loadNodeList(ruleId: number) {
+  nodeLoading.value = true;
+  try {
+    const res = await nodeApi.GetList({ rule: ruleId, limit: 50 });
+    nodeList.value = res.data?.results || res.data || [];
+  } catch (e: any) {
+    ElMessage.error(e.message || t('message.pages.scriptApproval.msgLoadNodeListFail'));
+  } finally {
+    nodeLoading.value = false;
+  }
+}
+
+function openNodeForm(row: any) {
+  if (nodeFormRef.value) {
+    nodeFormRef.value.clearValidate();
+  }
+  if (row && row.id) {
+    nodeForm.id = row.id;
+    nodeForm.rule = currentRule.value?.id;
+    nodeForm.node_name = row.node_name;
+    nodeForm.approver_type = row.approver_type;
+    nodeForm.approver_config = { ...(row.approver_config || {}) };
+    nodeForm.approval_mode = row.approval_mode;
+    nodeForm.step_order = row.step_order;
+  } else {
+    nodeForm.id = null;
+    nodeForm.rule = currentRule.value?.id;
+    nodeForm.node_name = '';
+    nodeForm.approver_type = 'category_reviewer';
+    nodeForm.approver_config = {};
+    nodeForm.approval_mode = 'any';
+    nodeForm.step_order = nodeList.value.length + 1;
+  }
+  nodeFormVisible.value = true;
+}
+
+function onApproverTypeChange() {
+  nodeForm.approver_config = {};
+}
+
+async function saveNode() {
+  if (!nodeFormRef.value) return;
+  try {
+    await nodeFormRef.value.validate();
+  } catch {
+    return;
+  }
+
+  nodeSaving.value = true;
+  try {
+    if (nodeForm.id) {
+      await nodeApi.UpdateObj({
+        id: nodeForm.id,
+        rule: currentRule.value?.id,
+        node_name: nodeForm.node_name,
+        approver_type: nodeForm.approver_type,
+        approver_config: nodeForm.approver_config,
+        approval_mode: nodeForm.approval_mode,
+        step_order: nodeForm.step_order,
+      });
+      ElMessage.success(t('message.pages.scriptApproval.msgUpdateSuccess'));
+    } else {
+      await nodeApi.AddObj({
+        rule: currentRule.value?.id,
+        node_name: nodeForm.node_name,
+        approver_type: nodeForm.approver_type,
+        approver_config: nodeForm.approver_config,
+        approval_mode: nodeForm.approval_mode,
+        step_order: nodeList.value.length + 1,
+      });
+      ElMessage.success(t('message.pages.scriptApproval.msgCreateSuccess'));
+    }
+    nodeFormVisible.value = false;
+    loadNodeList(currentRule.value?.id);
+  } catch (e: any) {
+    ElMessage.error(e.message || t('message.pages.scriptApproval.msgSaveFail'));
+  } finally {
+    nodeSaving.value = false;
+  }
+}
+
+async function deleteNode(row: any) {
+  try {
+    await ElMessageBox.confirm(t('message.pages.scriptApproval.msgDeleteNodeConfirmMsg', { name: row.node_name }), t('message.pages.scriptApproval.msgDeleteConfirmTitle'), { type: 'warning' });
+    await nodeApi.DelObj(row.id);
+    ElMessage.success(t('message.pages.scriptApproval.msgDeleteSuccess'));
+    loadNodeList(currentRule.value?.id);
+  } catch (e: any) {
+    if (e !== 'cancel') {
+      ElMessage.error(e.message || t('message.pages.scriptApproval.msgDeleteFail'));
+    }
+  }
+}
+
+async function moveNode(index: number, direction: number) {
+  const newIndex = index + direction;
+  if (newIndex < 0 || newIndex >= nodeList.value.length) return;
+
+  const nodeOrders = nodeList.value.map((node, i) => {
+    if (i === index) return { id: node.id, step_order: newIndex + 1 };
+    if (i === newIndex) return { id: node.id, step_order: index + 1 };
+    return { id: node.id, step_order: i + 1 };
+  });
+
+  try {
+    await ruleApi.updateNodeOrder(currentRule.value?.id, nodeOrders);
+    loadNodeList(currentRule.value?.id);
+  } catch (e: any) {
+    ElMessage.error(e.message || t('message.pages.scriptApproval.msgSortFail'));
+  }
+}
+</script>
+
+<style scoped lang="scss">
+.script-approval-rule-page {
+  width: 100%;
+  height: calc(100vh - 85px - 50px);
+  padding: 16px;
+  box-sizing: border-box;
+  min-height: 0;
+  background: #f5f7fa;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  overflow-y: auto;
+
+  /* Top header */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #fff;
+    padding: 16px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    flex-shrink: 0;
+    min-height: 0;
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+
+      .title {
+        h2 {
+          margin: 0;
+          font-size: 18px;
+          color: #303133;
+        }
+        .desc {
+          font-size: 12px;
+          color: #909399;
+          margin-left: 12px;
+        }
+      }
+
+      .stats {
+        display: flex;
+        gap: 24px;
+
+        .stat-item {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 8px 16px;
+          background: #f5f7fa;
+          border-radius: 8px;
+
+          .stat-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &.total-icon {
+              background: #ecf5ff;
+              color: #409eff;
+            }
+            &.active-icon {
+              background: #f0f9eb;
+              color: #67c23a;
+            }
+          }
+
+          .stat-info {
+            .stat-value {
+              font-size: 16px;
+              font-weight: 600;
+              color: #303133;
+              line-height: 1.2;
+            }
+            .stat-label {
+              font-size: 12px;
+              color: #909399;
+            }
+          }
+        }
+      }
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+    }
+  }
+
+  /* Card list container */
+  .card-list-wrap {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 0;
+
+    .empty-state {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      border-radius: 8px;
+      padding: 60px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+  }
+
+  /* Rule card grid */
+  .rule-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+    gap: 16px;
+  }
+
+  .rule-card {
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s;
+    display: flex;
+    position: relative;
+    border: 1px solid #ebeef5;
+
+    &:hover {
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    &.card-inactive {
+      opacity: 0.75;
+    }
+
+    .card-accent {
+      width: 4px;
+      flex-shrink: 0;
+    }
+
+    .card-body {
+      flex: 1;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .card-header {
+      .card-title-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+
+        .rule-name {
+          margin: 0;
+          font-size: 16px;
+          font-weight: 600;
+          color: #303133;
+          flex-shrink: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
+          max-width: 200px;
+        }
+
+        .status-tag {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          
+          .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+          }
+        }
+      }
+
+      .card-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+    }
+
+    .card-desc {
+      color: #606266;
+      font-size: 13px;
+      line-height: 1.6;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+
+      .group-chip {
+        background: #f5f7fa;
+        border-radius: 4px;
+        padding: 4px 10px;
+        font-size: 12px;
+        color: #606266;
+        display: flex;
+        gap: 4px;
+
+        &.more {
+          background: #ebeef5;
+          color: #909399;
+        }
+      }
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 12px;
+      border-top: 1px solid #ebeef5;
+
+      .card-creator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #909399;
+        font-size: 12px;
+
+        .card-time {
+          margin-left: 8px;
+        }
+      }
+
+      .card-actions {
+        display: flex;
+        gap: 4px;
+      }
+    }
+  }
+
+  /* Pagination */
+  .pagination-bar {
+    flex-shrink: 0;
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  /* Condition group style enhancements */
+  .condition-groups {
+    width: 100%;
+
+    .or-label {
+      margin-bottom: 16px;
+    }
+
+    .condition-group {
+      border: 1px solid #ebeef5;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+      background: #fafbfc;
+      border-left: 4px solid #409eff;
+
+      .group-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+
+        .group-title {
+          font-weight: 600;
+          color: #303133;
+          font-size: 14px;
+        }
+      }
+
+      .condition-list {
+        .condition-item {
+          display: flex;
+          align-items: flex-start;
+          gap: 12px;
+          margin-bottom: 12px;
+          background: #fff;
+          padding: 12px;
+          border-radius: 4px;
+          border: 1px solid #ebeef5;
+
+          .condition-value {
+            flex: 1;
+          }
+        }
+      }
+    }
+  }
+
+  /* Node Timeline */
+  .node-timeline-manager {
+    .node-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #ebeef5;
+
+      .node-header-info {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 600;
+        color: #303133;
+        font-size: 14px;
+      }
+    }
+
+    .timeline-container {
+      min-height: 200px;
+    }
+
+    .approval-timeline {
+      position: relative;
+      padding-left: 40px;
+
+      .timeline-item {
+        position: relative;
+        padding-bottom: 32px;
+
+        .timeline-node {
+          position: absolute;
+          left: -40px;
+          top: 0;
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          background: #409eff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #fff;
+          font-weight: 600;
+          z-index: 2;
+
+          .node-order {
+            font-size: 13px;
+          }
+        }
+
+        .timeline-connector {
+          position: absolute;
+          left: -23px;
+          top: 32px;
+          bottom: 0;
+          width: 2px;
+          background: #e4e7ed;
+        }
+
+        .node-card {
+          background: #fff;
+          border-radius: 8px;
+          padding: 16px;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+          border: 1px solid #ebeef5;
+          transition: all 0.3s;
+
+          &:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+          }
+
+          .node-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+
+            .node-title-row {
+              display: flex;
+              align-items: center;
+              gap: 12px;
+
+              h4 {
+                margin: 0;
+                font-size: 14px;
+                color: #303133;
+                font-weight: 600;
+              }
+            }
+
+            .node-actions {
+              display: flex;
+              gap: 4px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/* Global dialog style enhancements */
+:deep(.modern-dialog) {
+  .el-dialog__body {
+    padding: 20px;
+  }
+  .el-form-item__label {
+    font-weight: 500;
+    color: #606266;
+  }
+}
+
+:deep(.el-descriptions) {
+  .el-descriptions__label {
+    color: #909399;
+  }
+}
+</style>

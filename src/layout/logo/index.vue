@@ -1,0 +1,87 @@
+<template>
+	<div class="layout-logo" v-if="setShowLogo" @click="onThemeConfigChange">
+		<img :src="siteLogo" class="layout-logo-medium-img" />
+		<span style="font-size: x-large">{{ t('message.siteTitle') }}</span>
+	</div>
+	<div class="layout-logo-size" v-else @click="onThemeConfigChange">
+		<img :src="siteLogo" class="layout-logo-size-img" />
+	</div>
+</template>
+
+<script setup lang="ts" name="layoutLogo">
+import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
+import { useThemeConfig } from '/@/stores/themeConfig';
+import logoMini from '/src/assets/logo-mini.svg';
+
+import { useI18n } from 'vue-i18n';
+const { t } = useI18n();
+
+// define variables
+const storesThemeConfig = useThemeConfig();
+const { themeConfig } = storeToRefs(storesThemeConfig);
+
+// classic shows logo by default
+const setShowLogo = computed(() => {
+	let { isCollapse, layout } = themeConfig.value;
+	return !isCollapse || layout === 'classic' || document.body.clientWidth < 1000;
+});
+// logo click: toggle menu
+const onThemeConfigChange = () => {
+	if (themeConfig.value.layout === 'transverse') return false;
+	themeConfig.value.isCollapse = !themeConfig.value.isCollapse;
+};
+
+// 使用前端静态资源，不再从后端获取
+const siteLogo = logoMini;
+</script>
+
+<style scoped lang="scss">
+.layout-logo {
+	width: 220px;
+	height: 50px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: rgb(0 21 41 / 2%) 0px 1px 4px;
+	color: var(--el-color-primary);
+	font-size: 16px;
+	cursor: pointer;
+	animation: logoAnimation 0.3s ease-in-out;
+
+	span {
+		white-space: nowrap;
+		display: inline-block;
+	}
+
+	&:hover {
+		span {
+			color: var(--color-primary-light-2);
+		}
+	}
+
+	&-medium-img {
+		width: 40px;
+		margin-right: 5px;
+	}
+}
+
+.layout-logo-size {
+	width: 100%;
+	height: 50px;
+	display: flex;
+	cursor: pointer;
+	animation: logoAnimation 0.3s ease-in-out;
+
+	&-img {
+		width: 40px;
+		margin: auto;
+	}
+
+	&:hover {
+		img {
+			animation: logoAnimation 0.3s ease-in-out;
+		}
+	}
+}
+</style>

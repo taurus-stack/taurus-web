@@ -1,0 +1,18 @@
+import { setRegistryLoaded } from '../manifest/registry.ts'
+import './script.manifest.ts'
+import './command.manifest.ts'
+import './approval.manifest.ts'
+import './email_notification.manifest.ts'
+import './webhook_notification.manifest.ts'
+import './file_op.manifest.ts'
+import './sub_workflow.manifest.ts'
+import './http.manifest.ts'
+import './http_callback.manifest.ts'
+import './transform.manifest.ts'
+import './condition.manifest.ts'
+import './loop.manifest.ts'
+import './program.manifest.ts'
+import './virtual.manifest.ts'
+import './wait.manifest.ts'
+
+setRegistryLoaded(true)

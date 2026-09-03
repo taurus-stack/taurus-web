@@ -1,0 +1,145 @@
+/* Icon Selector 组件 —— 容器 + 下拉弹层
+------------------------------- */
+.icon-selector {
+	display: inline-block;
+	width: 100%;
+
+	/* el-input prepend 图标的宽度固定为48px，并居中，
+	   避免图标过宽压缩输入内容，也避免输入文字与图标视觉重叠 */
+	:deep(.el-input-group__prepend) {
+		flex: 0 0 48px;
+		min-width: 48px;
+		max-width: 48px;
+		padding: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		overflow: hidden;
+	}
+
+	/* 输入框本体至少要给 prepend 留 48px + 8px 间距 = 56px 的左内边距，
+	   保证 placeholder / value / 搜索词的首字母不被图标盖住 */
+	:deep(.el-input__wrapper) {
+		padding-left: 0;
+
+		.el-input__inner {
+			padding-left: 56px !important;
+		}
+	}
+
+	/* clearable 清除按钮不与 prepend 区域重叠 */
+	:deep(.el-input__clear) {
+		right: 14px;
+	}
+}
+
+/* Popover 弹出框(图标选择器) —— 简单可靠的流式分段布局：
+结构：
+  warp (270px 定高, column)
+    el-tabs (占满)
+      header (高 40px, flex row, 左右15内边距, 底部1px分割线)
+        nav-wrap (flex row)
+          [ #before slot —— title（左，不挤压） ]
+          [ el-tabs__nav-scroll flex:1 （tabs nav 右对齐） ]
+      content (剩余高度全占, 内部 list.vue 负责滚动)
+------------------------------- */
+.icon-selector-popper {
+	padding: 0 !important;
+
+	.icon-selector-warp {
+		height: 270px;
+		overflow: hidden;
+		display: flex;
+		flex-direction: column;
+	}
+
+	/* el-tabs 占满 warp */
+	.icon-selector-warp > .el-tabs {
+		flex: 1 1 auto;
+		min-height: 0;
+		display: flex;
+		flex-direction: column;
+		margin: 0;
+	}
+
+	/* ===== 顶部 header 行：严格 40px，包含 title + tabs nav ===== */
+	.icon-selector-warp > .el-tabs > :deep(.el-tabs__header) {
+		flex: 0 0 40px;
+		min-height: 40px;
+		height: 40px;
+		margin: 0 !important;
+		padding: 0 15px !important;
+		box-sizing: border-box;
+		border-bottom: 1px solid var(--el-border-color-light);
+	}
+	/* 去除 Element Plus 自己的 header::before 双线、nav-wrap::after 底线 */
+	.icon-selector-warp > .el-tabs > :deep(.el-tabs__header)::before,
+	.icon-selector-warp > .el-tabs > :deep(.el-tabs__header) .el-tabs__nav-wrap::after {
+		display: none !important;
+	}
+
+	/* nav-wrap 是 header 的直接容器，占满整个 header 内部，横向排：before / nav-scroll / after */
+	.icon-selector-warp > .el-tabs > :deep(.el-tabs__header) > :deep(.el-tabs__nav-wrap) {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		width: 100%;
+		height: 40px;
+		padding: 0;
+		margin: 0;
+		box-sizing: border-box;
+	}
+
+	/* #before slot 渲染在 .el-tabs__nav-prev 容器里 */
+	.icon-selector-warp > .el-tabs > :deep(.el-tabs__header) :deep(.el-tabs__nav-prev),
+	.icon-selector-warp > .el-tabs > :deep(.el-tabs__header) :deep(.el-tabs__nav-next) {
+		flex: 0 0 auto;
+	}
+
+	/* title 本身（before slot 内容）*/
+	.icon-selector-warp .icon-selector-warp-title {
+		flex: 0 0 auto;
+		max-width: 180px;
+		height: 40px;
+		line-height: 40px;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		font-size: 14px;
+		font-weight: 600;
+		color: var(--el-text-color-primary);
+		-webkit-user-select: none;
+		user-select: none;
+	}
+
+	/* tabs nav-scroll 占满剩余宽度，并把 tabs nav 推到右侧 */
+	.icon-selector-warp > .el-tabs > :deep(.el-tabs__header) :deep(.el-tabs__nav-scroll) {
+		flex: 1 1 auto;
+		min-width: 0;
+		display: flex;
+		justify-content: flex-end;
+		align-items: center;
+	}
+	.icon-selector-warp > .el-tabs > :deep(.el-tabs__header) :deep(.el-tabs__nav) {
+		margin: 0;
+	}
+	.icon-selector-warp > .el-tabs > :deep(.el-tabs__header) :deep(.el-tabs__item) {
+		padding: 0 10px !important;
+		height: 40px;
+		line-height: 40px;
+	}
+
+	/* ===== Tabs Content =====
+	   占满 warp 扣除 header 的剩余 229px，内部滚动交给 list.vue */
+	.icon-selector-warp > .el-tabs > :deep(.el-tabs__content) {
+		flex: 1 1 auto;
+		min-height: 0;
+		padding: 0 !important;
+		overflow: hidden;
+	}
+	.icon-selector-warp > .el-tabs > :deep(.el-tabs__content) > :deep(.el-tab-pane) {
+		height: 100%;
+		width: 100%;
+		padding: 0 !important;
+	}
+}
