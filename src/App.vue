@@ -58,9 +58,7 @@ async function _recomputeEditionBanner() {
 		_showEditionBannerRef.value = false;
 		return;
 	}
-	const last = Number(Local.get(CE_BANNER_LAST_TS) || 0);
-	const now = Date.now();
-	_showEditionBannerRef.value = !last || now - last > CE_BANNER_INTERVAL_MS;
+	_showEditionBannerRef.value = false;
 }
 const showEditionBanner = computed(() => _showEditionBannerRef.value);
 
@@ -71,12 +69,7 @@ function _onForceEditionUpgrade(_evt: Event) {
 
 // Get version number
 const getVersion = computed(() => {
-	let isVersion = false;
-	if (route.path !== '/login') {
-		// @ts-ignore
-		if ((Local.get('version') && Local.get('version') !== __VERSION__) || !Local.get('version')) isVersion = true;
-	}
-	return isVersion;
+	return false;
 });
 // Get global component size
 const getGlobalComponentSize = computed(() => {
