@@ -395,6 +395,7 @@ import { request } from '/@/utils/service'
 import * as Api from '/@/api/taurus/workflow/approval-instance'
 import { useUserInfo } from '/@/stores/userInfo'
 import { useI18n } from 'vue-i18n'
+import { useEditionStore } from '/@/editions/index'
 
 const { t } = useI18n()
 
@@ -703,6 +704,7 @@ const doCancel = async (row: any) => {
 }
 
 onMounted(async () => {
+  if (!useEditionStore().hasFeature('WORKFLOW_APPROVAL_FLOW')) return
   await Promise.all([loadUsers(), loadStats()])
   loadList()
 })

@@ -235,6 +235,7 @@ import EditionLockedPage from '/@/components/EditionLockedPage.vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Plus, Refresh, Search, MagicStick } from '@element-plus/icons-vue';
 import * as ruleApi from '/@/api/taurus/script-library/check-rule';
+import { useEditionStore } from '/@/editions/index';
 const { GetList, AddObj, UpdateObj, DelObj } = ruleApi;
 const { t } = useI18n();
 
@@ -414,6 +415,7 @@ async function handleInitDefault() {
 }
 
 onMounted(() => {
+  if (!useEditionStore().hasFeature('SCRIPT_SECURITY_CHECK')) return;
   loadRuleList();
 });
 </script>

@@ -12,10 +12,12 @@ import { ref, onMounted } from 'vue';
 import { useFs } from '@fast-crud/fast-crud';
 import EditionLockedPage from '/@/components/EditionLockedPage.vue';
 import { createCrudOptions } from './crud';
+import { useEditionStore } from '/@/editions/index';
 
 const { crudBinding, crudRef, crudExpose } = useFs({ createCrudOptions });
 
 onMounted(() => {
+  if (!useEditionStore().hasFeature('PROGRAM_INSTALL_POLICY')) return;
   crudExpose.doRefresh();
 });
 </script>

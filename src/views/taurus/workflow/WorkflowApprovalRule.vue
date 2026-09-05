@@ -1,5 +1,6 @@
 <template>
-  <div class="wf-approval-rule-page" v-if="hasFeature('WORKFLOW_APPROVAL_FLOW')">
+  <EditionLockedPage feature="WORKFLOW_APPROVAL_FLOW" label="作业审批规则">
+  <div class="wf-approval-rule-page">
     <div class="page-header">
       <div class="header-left">
         <div class="title">
@@ -503,6 +504,7 @@
       </template>
     </el-dialog>
   </div>
+  </EditionLockedPage>
 </template>
 
 <script setup lang="ts" name="WorkflowApprovalRule">
@@ -518,6 +520,7 @@ import * as nodeApi from '/@/api/taurus/workflow/approval-node';
 import * as categoryApi from '/@/api/taurus/workflow/category';
 import { useI18n } from 'vue-i18n';
 import { useEditionStore } from '/@/editions';
+import EditionLockedPage from '/@/components/EditionLockedPage.vue';
 
 const { t } = useI18n();
 const editionStore = useEditionStore();
@@ -618,6 +621,7 @@ const nodeFormRules = {
 };
 
 onMounted(() => {
+  if (!editionStore.hasFeature('WORKFLOW_APPROVAL_FLOW')) return;
   loadRuleList();
   loadCategories();
   loadUsers();

@@ -480,6 +480,7 @@ import { request } from '/@/utils/service';
 import * as ruleApi from '/@/api/taurus/script-library/approval-rule';
 import * as nodeApi from '/@/api/taurus/script-library/approval-node';
 import * as categoryApi from '/@/api/taurus/script-library/category';
+import { useEditionStore } from '/@/editions/index';
 
 const { t } = useI18n();
 
@@ -569,6 +570,7 @@ const nodeFormRules = {
 };
 
 onMounted(() => {
+  if (!useEditionStore().hasFeature('SCRIPT_APPROVAL_FLOW')) return;
   loadRuleList();
   loadCategories();
   loadUsers();

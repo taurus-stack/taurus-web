@@ -1,5 +1,6 @@
 <template>
-  <fs-page v-if="hasFeature('TASK_CENTER')">
+  <EditionLockedPage feature="TASK_CENTER" label="任务管理中心">
+  <fs-page>
     <div class="task-center-page">
       <!-- Page header -->
       <div class="page-header">
@@ -250,12 +251,14 @@
       </div>
     </div>
   </fs-page>
+  </EditionLockedPage>
 </template>
 
 <script lang="ts" setup>
 import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useEditionStore } from '/@/editions';
+import EditionLockedPage from '/@/components/EditionLockedPage.vue';
 
 const { t } = useI18n();
 const hasFeature = (code: string) => useEditionStore().hasFeature(code);
@@ -385,6 +388,7 @@ const formatDateTime = (val: string): string => {
 };
 
 onMounted(() => {
+  if (!useEditionStore().hasFeature('TASK_CENTER')) return;
   loadData();
 });
 </script>

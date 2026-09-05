@@ -18,6 +18,7 @@ import { createCrudOptions } from './crud';
 import ApplyToHosts from './components/ApplyToHosts.vue';
 import { ElMessage } from 'element-plus';
 import { i18n } from '/@/i18n';
+import { useEditionStore } from '/@/editions/index';
 
 // @ts-ignore — vue-i18n type inference chain too deep, runtime is fine
 const t = i18n.global.t;
@@ -41,7 +42,10 @@ const handleApplyToHostsOpen = async (event: any) => {
 };
 
 onMounted(() => {
-	crudExpose.doRefresh();
+	const store = useEditionStore();
+	if (store.hasFeature('PROGRAM_INSTALL_TEMPLATE')) {
+		crudExpose.doRefresh();
+	}
 	window.addEventListener('apply-to-hosts-open', handleApplyToHostsOpen);
 });
 

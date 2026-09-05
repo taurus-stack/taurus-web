@@ -646,6 +646,7 @@ import { useRouter } from 'vue-router';
 import { useUserInfo } from '/@/stores/userInfo';
 import { request } from '/@/utils/service';
 import * as approvalApi from '/@/api/taurus/execution-approval/api';
+import { useEditionStore } from '/@/editions/index';
 
 const router = useRouter();
 const { t } = useI18n();
@@ -793,6 +794,8 @@ async function copyScript() {
 }
 
 onMounted(() => {
+	const editionStore = useEditionStore();
+	if (!editionStore.hasFeature('OPS_EXECUTION_APPROVAL')) return;
 	try {
 		const userStore = useUserInfo();
 		userInfo.value = userStore.userInfos || {};
