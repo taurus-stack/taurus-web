@@ -13,7 +13,7 @@
 					{{ featureLabel }}
 					<span class="elp-badge">ENTERPRISE</span>
 				</div>
-				<div class="elp-subtitle">此功能仅 Taurus Stack 企业版（Enterprise Edition）提供</div>
+				<div class="elp-subtitle">{{ t('message.pages.edition.lockedSubtitle') }}</div>
 
 				<div class="elp-features">
 					<div v-for="(f, i) in highlights" :key="i" class="elp-feature">
@@ -23,9 +23,9 @@
 				</div>
 
 				<div class="elp-actions">
-					<el-button round size="default" @click="goBack">返回上一页</el-button>
+					<el-button round size="default" @click="goBack">{{ t('message.pages.edition.lockedBackBtn') }}</el-button>
 					<el-button round size="default" type="primary" @click="goUpgrade">
-						🚀 升级到企业版
+						{{ t('message.pages.edition.lockedUpgradeBtn') }}
 					</el-button>
 				</div>
 			</div>
@@ -47,6 +47,7 @@
  */
 import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { Check } from '@element-plus/icons-vue';
 import { useEditionStore } from '/@/editions/index';
 import { ElMessage } from 'element-plus';
@@ -61,6 +62,7 @@ const props = defineProps<{
 }>();
 
 const router = useRouter();
+const { t } = useI18n();
 const editionStore = useEditionStore();
 
 const featureCodes = computed(() =>
@@ -71,12 +73,16 @@ const showContent = computed(() =>
 	editionStore.loaded && featureCodes.value.some((c) => editionStore.hasFeature(c))
 );
 
-const featureLabel = computed(() => props.label || '该页面');
+const featureLabel = computed(() => props.label || t('message.pages.edition.lockedDefaultLabel'));
 
 const highlights = computed(() =>
 	props.highlights && props.highlights.length > 0
 		? props.highlights
-		: ['解锁企业级核心能力', '享受专业技术支持', '保障大规模运维合规']
+		: [
+				t('message.pages.edition.lockedHighlight1'),
+				t('message.pages.edition.lockedHighlight2'),
+				t('message.pages.edition.lockedHighlight3'),
+			]
 );
 
 const goBack = () => {
@@ -88,9 +94,8 @@ const goBack = () => {
 };
 
 const goUpgrade = () => {
-	// 优先打开 Upgrade 弹窗（通过全局事件），fallback 到联系销售页
 	window.dispatchEvent(new CustomEvent('taurus:edition-upgrade'));
-	ElMessage.info('升级引导弹窗即将显示…');
+	ElMessage.info(t('message.pages.edition.lockedUpgradeToast'));
 };
 </script>
 

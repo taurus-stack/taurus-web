@@ -1,5 +1,5 @@
 <template>
-  <EditionLockedPage feature="TICKET_CENTER" label="工单中心">
+  <EditionLockedPage feature="TICKET_CENTER" :label="t('message.pages.edition.lockedPageLabels.ticketCenter')">
   <div class="ticket-center-page">
     <!-- Top action filter bar -->
     <div class="page-header">

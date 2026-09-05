@@ -1,5 +1,5 @@
 <template>
-	<EditionLockedPage feature="PROGRAM_INSTALL_TEMPLATE" label="企业程序安装模板">
+	<EditionLockedPage feature="PROGRAM_INSTALL_TEMPLATE" :label="t('message.pages.edition.lockedPageLabels.programInstallTemplate')">
 	<fs-page>
 		<fs-crud ref="crudRef" v-bind="crudBinding">
 			<template #actionbar-right>

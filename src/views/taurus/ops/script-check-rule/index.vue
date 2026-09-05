@@ -1,5 +1,5 @@
 <template>
-  <EditionLockedPage feature="SCRIPT_SECURITY_CHECK" label="脚本安全扫描规则">
+  <EditionLockedPage feature="SCRIPT_SECURITY_CHECK" :label="t('message.pages.edition.lockedPageLabels.scriptCheckRule')">
   <div class="script-check-rule-page">
     <div class="page-header">
       <div class="title">

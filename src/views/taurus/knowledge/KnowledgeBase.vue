@@ -1,5 +1,5 @@
 <template>
-  <EditionLockedPage feature="KNOWLEDGE_BASE" label="知识库">
+  <EditionLockedPage feature="KNOWLEDGE_BASE" :label="t('message.pages.edition.lockedPageLabels.knowledgeBase')">
   <div class="knowledge-page">
     <div class="page-container">
       <!-- Left category tree -->

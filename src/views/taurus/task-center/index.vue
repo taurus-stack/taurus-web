@@ -1,5 +1,5 @@
 <template>
-  <EditionLockedPage feature="TASK_CENTER" label="任务管理中心">
+  <EditionLockedPage feature="TASK_CENTER" :label="t('message.pages.edition.lockedPageLabels.taskCenter')">
   <fs-page>
     <div class="task-center-page">
       <!-- Page header -->

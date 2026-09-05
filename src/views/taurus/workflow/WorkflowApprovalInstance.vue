@@ -1,5 +1,5 @@
 <template>
-  <EditionLockedPage feature="WORKFLOW_APPROVAL_FLOW" label="工作流审批中心">
+  <EditionLockedPage feature="WORKFLOW_APPROVAL_FLOW" :label="t('message.pages.edition.lockedPageLabels.workflowApprovalInstance')">
   <div class="wf-approval-instance-page">
     <div class="page-header">
       <div class="header-left">

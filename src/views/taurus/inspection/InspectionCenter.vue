@@ -1,5 +1,5 @@
 <template>
-  <EditionLockedPage feature="INSPECTION_CENTER" label="巡检中心">
+  <EditionLockedPage feature="INSPECTION_CENTER" :label="t('message.pages.edition.lockedPageLabels.inspectionCenter')">
   <div class="inspection-page">
     <!-- Stats cards -->
     <div class="stat-row">

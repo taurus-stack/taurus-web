@@ -1,5 +1,5 @@
 <template>
-  <EditionLockedPage feature="SCRIPT_APPROVAL_FLOW" label="脚本审批中心">
+  <EditionLockedPage feature="SCRIPT_APPROVAL_FLOW" :label="t('message.pages.edition.lockedPageLabels.scriptApproval')">
   <div class="script-approval-rule-page">
     <!-- Top header -->
     <div class="page-header">

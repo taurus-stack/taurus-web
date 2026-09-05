@@ -13,6 +13,34 @@ export default {
 				workflowQuotaBadge: '工作流 {current}/{limit}',
 				workflowQuotaUpgradeHint: '配额已满，点击查看升级方案',
 
+				// === EditionLockedPage（整页锁遮罩）===
+				lockedSubtitle: '此功能仅 Taurus Stack 企业版（Enterprise Edition）提供',
+				lockedBackBtn: '返回上一页',
+				lockedUpgradeBtn: '🚀 升级到企业版',
+				lockedDefaultLabel: '该页面',
+				lockedHighlight1: '解锁企业级核心能力',
+				lockedHighlight2: '享受专业技术支持',
+				lockedHighlight3: '保障大规模运维合规',
+				lockedUpgradeToast: '升级引导弹窗即将显示…',
+
+				// === EditionLockedPage 各页面标题（label prop 用）===
+				lockedPageLabels: {
+					ticketCenter: '工单中心',
+					inspectionCenter: '巡检中心',
+					knowledgeBase: '知识库',
+					taskCenter: '任务管理中心',
+					toolsCenter: '运维工具箱',
+					workflowApproveList: '作业审批中心',
+					workflowApprovalInstance: '工作流审批中心',
+					workflowApprovalRule: '作业审批规则',
+					programInstallTemplate: '企业程序安装模板',
+					programInstallConfig: '企业程序安装配置',
+					programInstallPolicy: '企业程序安装策略',
+					scriptCheckRule: '脚本安全扫描规则',
+					scriptApproval: '脚本审批中心',
+					executionApproval: '执行审批中心',
+				},
+
 				// === Upgrade banner ===
 				ceBannerTitle: '正在使用社区版？',
 				ceBannerSubtitle: '解锁企业版全部高级能力',

@@ -1,5 +1,5 @@
 <template>
-  <EditionLockedPage feature="WORKFLOW_APPROVAL_FLOW" label="作业审批规则">
+  <EditionLockedPage feature="WORKFLOW_APPROVAL_FLOW" :label="t('message.pages.edition.lockedPageLabels.workflowApprovalRule')">
   <div class="wf-approval-rule-page">
     <div class="page-header">
       <div class="header-left">

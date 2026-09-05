@@ -1,5 +1,5 @@
 <template>
-  <EditionLockedPage feature="TOOLS_CENTER" label="运维工具箱">
+  <EditionLockedPage feature="TOOLS_CENTER" :label="t('message.pages.edition.lockedPageLabels.toolsCenter')">
   <div class="tools-center-page">
     <div class="tools-container">
       <!-- Left category menu -->

@@ -1,5 +1,5 @@
 <template>
-	<EditionLockedPage feature="OPS_EXECUTION_APPROVAL" label="执行审批中心">
+	<EditionLockedPage feature="OPS_EXECUTION_APPROVAL" :label="t('message.pages.edition.lockedPageLabels.executionApproval')">
 	<fs-page>
 		<div class="approval-container">
 			<div class="page-header">
