@@ -1,6 +1,6 @@
 {
 	"name": "taurus-web",
-	"version": "0.1.0",
+	"version": "1.0.0",
 	"description": "Taurus Web - Enterprise Web Management Interface for Taurus Ops",
 	"author": "Taurus Team",
 	"license": "MIT",

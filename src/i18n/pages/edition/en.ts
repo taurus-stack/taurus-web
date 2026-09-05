@@ -13,6 +13,34 @@ export default {
 				workflowQuotaBadge: 'Workflows {current}/{limit}',
 				workflowQuotaUpgradeHint: 'Quota full. Click to view upgrade options.',
 
+				// === EditionLockedPage (full-page lock overlay) ===
+				lockedSubtitle: 'This feature is available only in Taurus Stack Enterprise Edition',
+				lockedBackBtn: 'Go Back',
+				lockedUpgradeBtn: '🚀 Upgrade to Enterprise',
+				lockedDefaultLabel: 'This page',
+				lockedHighlight1: 'Unlock enterprise-grade core capabilities',
+				lockedHighlight2: 'Enjoy professional technical support',
+				lockedHighlight3: 'Ensure large-scale operations compliance',
+				lockedUpgradeToast: 'Upgrade guide dialog will appear shortly…',
+
+				// === EditionLockedPage page titles (for label prop) ===
+				lockedPageLabels: {
+					ticketCenter: 'Ticket Center',
+					inspectionCenter: 'Inspection Center',
+					knowledgeBase: 'Knowledge Base',
+					taskCenter: 'Task Management Center',
+					toolsCenter: 'Ops Toolbox',
+					workflowApproveList: 'Workflow Approval Center',
+					workflowApprovalInstance: 'Workflow Approval Center',
+					workflowApprovalRule: 'Workflow Approval Rules',
+					programInstallTemplate: 'Enterprise Program Install Template',
+					programInstallConfig: 'Enterprise Program Install Config',
+					programInstallPolicy: 'Enterprise Program Install Policy',
+					scriptCheckRule: 'Script Security Scan Rules',
+					scriptApproval: 'Script Approval Center',
+					executionApproval: 'Execution Approval Center',
+				},
+
 				// === Upgrade banner ===
 				ceBannerTitle: 'Using Community Edition?',
 				ceBannerSubtitle: 'Unlock all Enterprise capabilities',

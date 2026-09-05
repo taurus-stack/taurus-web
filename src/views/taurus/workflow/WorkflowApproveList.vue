@@ -1,5 +1,6 @@
 <template>
-  <div class="wf-approve-page" v-if="hasFeature('WORKFLOW_APPROVAL_FLOW')">
+  <EditionLockedPage feature="WORKFLOW_APPROVAL_FLOW" :label="t('message.pages.edition.lockedPageLabels.workflowApproveList')">
+  <div class="wf-approve-page">
     <div class="page-header">
       <div class="header-left">
         <div class="title">
@@ -259,11 +260,13 @@
       </template>
     </el-dialog>
   </div>
+  </EditionLockedPage>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import EditionLockedPage from '/@/components/EditionLockedPage.vue'
 import { useEditionStore } from '/@/editions'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
@@ -439,7 +442,10 @@ const doReject = async () => {
   }
 }
 
-onMounted(() => loadList())
+onMounted(() => {
+  if (!useEditionStore().hasFeature('WORKFLOW_APPROVAL_FLOW')) return
+  loadList()
+})
 </script>
 
 <style scoped lang="scss">

@@ -1,5 +1,6 @@
 <template>
-  <div class="tools-center-page" v-if="hasFeature('TOOLS_CENTER')">
+  <EditionLockedPage feature="TOOLS_CENTER" :label="t('message.pages.edition.lockedPageLabels.toolsCenter')">
+  <div class="tools-center-page">
     <div class="tools-container">
       <!-- Left category menu -->
       <div class="tools-menu">
@@ -113,12 +114,14 @@
       </div>
     </div>
   </div>
-</template>
+  </EditionLockedPage>
+  </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useEditionStore } from '/@/editions'
+import EditionLockedPage from '/@/components/EditionLockedPage.vue'
 
 const { t } = useI18n()
 const hasFeature = (code) => useEditionStore().hasFeature(code)
@@ -228,6 +231,7 @@ const copyResult = (text) => {
 
 // Page initialization
 onMounted(() => {
+  if (!useEditionStore().hasFeature('TOOLS_CENTER')) return
   generatePassword()
   getNowTimestamp()
 })

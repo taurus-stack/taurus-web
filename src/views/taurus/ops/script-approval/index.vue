@@ -1,5 +1,5 @@
 <template>
-  <EditionLockedPage feature="SCRIPT_APPROVAL_FLOW" label="脚本审批中心">
+  <EditionLockedPage feature="SCRIPT_APPROVAL_FLOW" :label="t('message.pages.edition.lockedPageLabels.scriptApproval')">
   <div class="script-approval-rule-page">
     <!-- Top header -->
     <div class="page-header">
@@ -480,6 +480,7 @@ import { request } from '/@/utils/service';
 import * as ruleApi from '/@/api/taurus/script-library/approval-rule';
 import * as nodeApi from '/@/api/taurus/script-library/approval-node';
 import * as categoryApi from '/@/api/taurus/script-library/category';
+import { useEditionStore } from '/@/editions/index';
 
 const { t } = useI18n();
 
@@ -569,6 +570,7 @@ const nodeFormRules = {
 };
 
 onMounted(() => {
+  if (!useEditionStore().hasFeature('SCRIPT_APPROVAL_FLOW')) return;
   loadRuleList();
   loadCategories();
   loadUsers();

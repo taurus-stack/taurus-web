@@ -1,5 +1,6 @@
 <template>
-  <div class="knowledge-page" v-if="hasFeature('KNOWLEDGE_BASE')">
+  <EditionLockedPage feature="KNOWLEDGE_BASE" :label="t('message.pages.edition.lockedPageLabels.knowledgeBase')">
+  <div class="knowledge-page">
     <div class="page-container">
       <!-- Left category tree -->
       <div class="left-tree">
@@ -102,12 +103,14 @@
       </div>
     </div>
   </div>
-</template>
+  </EditionLockedPage>
+  </template>
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useEditionStore } from '/@/editions'
+import EditionLockedPage from '/@/components/EditionLockedPage.vue'
 
 const { t } = useI18n()
 const hasFeature = (code) => useEditionStore().hasFeature(code)
@@ -180,6 +183,7 @@ const mockArticles = [
 ]
 
 onMounted(() => {
+  if (!useEditionStore().hasFeature('KNOWLEDGE_BASE')) return
   getArticleList()
 })
 

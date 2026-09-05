@@ -1,5 +1,6 @@
 <template>
-  <div class="inspection-page" v-if="hasFeature('INSPECTION_CENTER')">
+  <EditionLockedPage feature="INSPECTION_CENTER" :label="t('message.pages.edition.lockedPageLabels.inspectionCenter')">
+  <div class="inspection-page">
     <!-- Stats cards -->
     <div class="stat-row">
       <div class="stat-card">
@@ -171,12 +172,14 @@
       </div>
     </el-dialog>
   </div>
-</template>
+  </EditionLockedPage>
+  </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useEditionStore } from '/@/editions'
+import EditionLockedPage from '/@/components/EditionLockedPage.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const { t } = useI18n()
@@ -200,6 +203,7 @@ const statData = reactive({
 })
 
 onMounted(() => {
+  if (!useEditionStore().hasFeature('INSPECTION_CENTER')) return
   getDataList()
 })
 

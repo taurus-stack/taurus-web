@@ -1,5 +1,6 @@
 <template>
-  <div class="ticket-center-page" v-if="hasFeature('TICKET_CENTER')">
+  <EditionLockedPage feature="TICKET_CENTER" :label="t('message.pages.edition.lockedPageLabels.ticketCenter')">
+  <div class="ticket-center-page">
     <!-- Top action filter bar -->
     <div class="page-header">
       <h2>{{ t('message.pages.ticketCenter.tcPageTitle') }}</h2>
@@ -153,12 +154,14 @@
       </div>
     </el-drawer>
   </div>
-</template>
+  </EditionLockedPage>
+  </template>
 
 <script setup>
 import { ref, reactive, onMounted, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useEditionStore } from '/@/editions'
+import EditionLockedPage from '/@/components/EditionLockedPage.vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 
 const { t } = useI18n()
@@ -200,6 +203,7 @@ const statusTypeMap = {
 }
 
 onMounted(() => {
+  if (!useEditionStore().hasFeature('TICKET_CENTER')) return
   getTicketList()
 })
 
