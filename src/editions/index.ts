@@ -209,11 +209,11 @@ export function triggerEeUpgrade(code: FeatureCode | FeatureCode[] | undefined, 
 		.catch(() => {});
 }
 
-export function triggerEeUpgradeByMeta(meta: any, customDesc?: string) {
-	const codes = (meta?._eeCodes as FeatureCode[]) || [];
-	triggerEeUpgrade(codes.length ? codes : undefined, customDesc);
-}
-
 export function eeTooltipTxt(): string {
 	return _safeT('message.pages.edition.enterpriseOnlyTooltip', '此功能为企业版专属，点击了解升级方案');
+}
+
+export function triggerUpgradeBanner(code?: FeatureCode | FeatureCode[]) {
+	const codes: FeatureCode[] = !code ? [] : Array.isArray(code) ? code.filter(Boolean) : [code];
+	window.dispatchEvent(new CustomEvent('taurus:edition-upgrade', { detail: { code: codes[0], codes } }));
 }

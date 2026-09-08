@@ -168,8 +168,6 @@ function _markTree(nodes: any[], editionStore: ReturnType<typeof useEditionStore
 			const codes = Array.isArray(code) ? code : [code];
 			node.meta._eeGate = true;
 			node.meta._eeCodes = codes.filter(Boolean);
-			// 强制禁用菜单项（路由级仍可通过 url 访问的场景，会被页面级 v-if 再次 gate）
-			node.meta.disabled = true;
 		}
 		// 子树递归标记（不影响父节点是否保留——所有节点都保留，只标记）
 		if (node.children && node.children.length) {
