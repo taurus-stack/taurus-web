@@ -253,6 +253,8 @@ const formatRecentExecStatus = (status: number): string => {
 };
 
 onMounted(async () => {
+    await editionStore.ensureLoaded();
+
     const now = new Date();
     const today = T('welcome.today');
     const wish = T('welcome.wish');
@@ -568,8 +570,8 @@ const scheduleStatusLabel = computed(() => (row: any) =>
             </div>
         </div>
 
-        <div class="approval-section ee-gate-section"
-             :class="{ 'is-ee-gate': !(hasFeature('SCRIPT_APPROVAL_FLOW') || hasFeature('WORKFLOW_APPROVAL_FLOW') || hasFeature('OPS_EXECUTION_APPROVAL')) }"
+        <div class="approval-section"
+             :class="{ 'ee-gate-section': !(hasFeature('SCRIPT_APPROVAL_FLOW') || hasFeature('WORKFLOW_APPROVAL_FLOW') || hasFeature('OPS_EXECUTION_APPROVAL')) }"
              :title="!(hasFeature('SCRIPT_APPROVAL_FLOW') || hasFeature('WORKFLOW_APPROVAL_FLOW') || hasFeature('OPS_EXECUTION_APPROVAL')) ? t('message.pages.edition.enterpriseOnlyTooltip') : ''"
              @click="handleApprovalSectionClick">
             <div class="section-title">{{ T('approval.sectionTitle') }}</div>
@@ -750,14 +752,14 @@ const scheduleStatusLabel = computed(() => (row: any) =>
                 </div>
             </div>
 
-            <div class="right-col ee-gate-section"
-                 :class="{ 'is-ee-gate': !hasFeature('SCRIPT_TASK_UNIFIED') }"
+            <div class="right-col"
+                 :class="{ 'ee-gate-section': !hasFeature('SCRIPT_TASK_UNIFIED') }"
                  :title="!hasFeature('SCRIPT_TASK_UNIFIED') ? t('message.pages.edition.enterpriseOnlyTooltip') : ''"
                  @click="handleScheduleColClick">
                 <div class="panel-card">
                     <div class="panel-header">
                         <span class="panel-title">{{ T('panels.myScheduleTitle') }}</span>
-                        <el-button text type="primary" size="small" @click="goLegacySchedule">{{ T('panels.scheduleCenter') }}</el-button>
+                        <el-button text type="primary" size="small" @click="goSchedule">{{ T('panels.scheduleCenter') }}</el-button>
                     </div>
                     <el-table :data="mySchedules" size="small" border stripe>
                         <el-table-column :label="T('panels.colScheduleName')" show-overflow-tooltip>
@@ -1214,6 +1216,16 @@ const scheduleStatusLabel = computed(() => (row: any) =>
 .panel-card :deep(.el-table) {
   flex: 1;
   height: auto !important;
+}
+
+.right-col .panel-card {
+  max-height: 420px;
+  overflow: hidden;
+}
+
+.right-col .panel-card :deep(.el-table) {
+  max-height: 360px;
+  overflow-y: auto;
 }
 
 @media screen and (max-width: 1366px) {

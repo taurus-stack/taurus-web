@@ -4,7 +4,6 @@
 			:index="val.path"
 			:key="val.path"
 			v-if="val.children && val.children.length > 0"
-			:disabled="!!val.meta?._eeGate"
 			:class="{ 'ee-gate-card': !!val.meta?._eeGate, 'is-ee-gate': !!val.meta?._eeGate }"
 			:title="val.meta?._eeGate ? eeTooltipTxt() : ''"
 			@click.stop="onSubMenuClick(val, $event)"
@@ -22,8 +21,7 @@
 			<el-menu-item
 				:index="val.path"
 				:key="val.path"
-				:disabled="!!val.meta?._eeGate"
-				:class="{ 'ee-gate-card': !!val.meta?._eeGate, 'is-ee-gate': !!val.meta?._eeGate }"
+					:class="{ 'ee-gate-card': !!val.meta?._eeGate, 'is-ee-gate': !!val.meta?._eeGate }"
 				:title="val.meta?._eeGate ? eeTooltipTxt() : ''"
 				@click.stop="onMenuItemClick(val, $event)"
 			>
@@ -52,7 +50,7 @@
 import { computed } from 'vue';
 import { RouteRecordRaw } from 'vue-router';
 import other from '/@/utils/other';
-import { triggerEeUpgradeByMeta, eeTooltipTxt } from '/@/editions/index';
+import { eeTooltipTxt, triggerUpgradeBanner } from '/@/editions/index';
 
 // define props passed from parent
 const props = defineProps({
@@ -70,7 +68,7 @@ const onSubMenuClick = (val: any, e: MouseEvent) => {
 	if (val.meta?._eeGate) {
 		e.preventDefault();
 		e.stopImmediatePropagation();
-		triggerEeUpgradeByMeta(val.meta);
+		triggerUpgradeBanner(val.meta?._eeCodes);
 		return false;
 	}
 };
@@ -79,7 +77,7 @@ const onMenuItemClick = (val: any, e: MouseEvent) => {
 	if (val.meta?._eeGate) {
 		e.preventDefault();
 		e.stopImmediatePropagation();
-		triggerEeUpgradeByMeta(val.meta);
+		triggerUpgradeBanner(val.meta?._eeCodes);
 		return false;
 	}
 	if (!val.meta?.isLink || (val.meta?.isLink && val.meta?.isIframe)) return;
@@ -90,7 +88,7 @@ const onALinkClick = (val: any, e: MouseEvent) => {
 	if (val.meta?._eeGate) {
 		e.preventDefault();
 		e.stopImmediatePropagation();
-		triggerEeUpgradeByMeta(val.meta);
+		triggerUpgradeBanner(val.meta?._eeCodes);
 		return false;
 	}
 	other.handleOpenLink(val);

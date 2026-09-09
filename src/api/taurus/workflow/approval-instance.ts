@@ -90,7 +90,7 @@ export function cancel(id: any) {
 
 export function getStatsCount() {
 	return request({
-		url: apiPrefix + 'stats/count/',
+		url: apiPrefix + 'stats-count/',
 		method: 'get',
 	});
 }

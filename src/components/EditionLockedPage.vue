@@ -102,7 +102,8 @@ const goUpgrade = () => {
 <style scoped lang="scss">
 .edition-locked-page {
 	position: relative;
-	min-height: 100%;
+	flex: 1;
+	min-height: 0;
 }
 
 .elp-mask {

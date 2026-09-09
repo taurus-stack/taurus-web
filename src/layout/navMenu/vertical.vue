@@ -12,7 +12,6 @@
 				:index="val.path"
 				v-if="val.children && val.children.length > 0"
 				:key="val.path"
-				:disabled="!!val.meta?._eeGate"
 				:class="{ 'ee-gate-card': !!val.meta?._eeGate, 'is-ee-gate': !!val.meta?._eeGate }"
 				:title="val.meta?._eeGate ? eeTooltipTxt() : ''"
 				@click.stop="onTopSubMenuClick(val, $event)"
@@ -30,8 +29,7 @@
 				<el-menu-item
 					:index="val.path"
 					:key="val.path"
-					:disabled="!!val.meta?._eeGate"
-					:class="{ 'ee-gate-card': !!val.meta?._eeGate, 'is-ee-gate': !!val.meta?._eeGate }"
+						:class="{ 'ee-gate-card': !!val.meta?._eeGate, 'is-ee-gate': !!val.meta?._eeGate }"
 					:title="val.meta?._eeGate ? eeTooltipTxt() : ''"
 					@click.stop="onTopMenuClick(val, $event)"
 				>
@@ -62,7 +60,7 @@ import { useRoute, onBeforeRouteUpdate, RouteRecordRaw } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
 import other from '/@/utils/other';
-import { triggerEeUpgradeByMeta, eeTooltipTxt } from '/@/editions/index';
+import { eeTooltipTxt, triggerUpgradeBanner } from '/@/editions/index';
 
 const SubItem = defineAsyncComponent(() => import('/@/layout/navMenu/subItem.vue'));
 
@@ -98,7 +96,7 @@ const onTopSubMenuClick = (val: any, e: MouseEvent) => {
 	if (val.meta?._eeGate) {
 		e.preventDefault();
 		e.stopImmediatePropagation();
-		triggerEeUpgradeByMeta(val.meta);
+		triggerUpgradeBanner(val.meta?._eeCodes);
 		return false;
 	}
 };
@@ -106,7 +104,7 @@ const onTopMenuClick = (val: any, e: MouseEvent) => {
 	if (val.meta?._eeGate) {
 		e.preventDefault();
 		e.stopImmediatePropagation();
-		triggerEeUpgradeByMeta(val.meta);
+		triggerUpgradeBanner(val.meta?._eeCodes);
 		return false;
 	}
 };
@@ -114,7 +112,7 @@ const onALinkClick = (val: any, e: MouseEvent) => {
 	if (val.meta?._eeGate) {
 		e.preventDefault();
 		e.stopImmediatePropagation();
-		triggerEeUpgradeByMeta(val.meta);
+		triggerUpgradeBanner(val.meta?._eeCodes);
 		return false;
 	}
 	other.handleOpenLink(val);
