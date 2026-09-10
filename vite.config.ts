@@ -86,10 +86,15 @@ const viteConfig = defineConfig((mode: ConfigEnv) => {
 					manualChunks(id) {
 						if (id.includes('node_modules')) {
 							if (id.includes('echarts')) return 'echarts';
-							if (id.includes('element-plus')) return 'element-plus';
 							if (id.includes('vxe-table') || id.includes('xe-utils')) return 'vxe-table';
-							if (id.includes('@fast-crud')) return 'fast-crud';
-							if (id.includes('vue') || id.includes('pinia') || id.includes('vue-router')) return 'vue';
+							if (
+								id.includes('@fast-crud') ||
+								id.includes('element-plus') ||
+								id.includes('vue') ||
+								id.includes('pinia') ||
+								id.includes('vue-router')
+							)
+								return 'vue';
 							if (id.includes('lodash') || id.includes('axios') || id.includes('qs')) return 'utils';
 						}
 					},
