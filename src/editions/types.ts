@@ -6,8 +6,14 @@
  * 但推荐新增时同步写入便于类型检查。
  */
 
-export type EditionName = 'community' | 'enterprise';
+/**
+ * 单一全功能版本：edition 字段仅作兼容保留，恒为 community。
+ * 版本差异由 License 状态（state）与服务等级（tier）体现。
+ */
+export type EditionName = 'community';
 export type TierName = 'community' | 'starter' | 'professional' | 'enterprise' | 'ultimate';
+/** License 四态：免费 / 已授权 / 过期宽限 / 阻断 */
+export type LicenseState = 'free' | 'licensed' | 'grace' | 'blocked';
 
 /** 常用 Feature Code 快捷常量（只列常用的，更多用字符串传递即可） */
 export const FEATURES = {

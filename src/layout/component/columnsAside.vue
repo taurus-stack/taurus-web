@@ -42,7 +42,7 @@
 			</ul>
 		</el-scrollbar>
 		<div class="columns-aside-footer">
-			<div class="columns-version-badge" :class="'is-' + edition" :title="editionTitle">
+			<div class="columns-version-badge" :class="'is-' + licenseState" :title="editionTitle">
 				{{ editionShort }}
 			</div>
 			<div class="columns-version-text" :title="'v' + appVersion">
@@ -73,15 +73,20 @@ const storesThemeConfig = useThemeConfig();
 const storesEdition = useEditionStore();
 const { routesList, isColumnsMenuHover, isColumnsNavHover } = storeToRefs(stores);
 const { themeConfig } = storeToRefs(storesThemeConfig);
-const { edition } = storeToRefs(storesEdition);
+const { tier, licenseState } = storeToRefs(storesEdition);
 // @ts-ignore __VERSION__ 由 vite define 在编译时注入
 const appVersion = __VERSION__;
 storesEdition.ensureLoaded();
 
-const editionShort = computed(() => (edition.value === 'enterprise' ? 'E' : 'C'));
-const editionTitle = computed(() =>
-	edition.value === 'enterprise' ? t('editionEnterprise') : t('editionCommunity')
-);
+// 紧凑徽标：取服务等级首字母（community→C / starter→S / professional→P / enterprise→E / ultimate→U）
+const editionShort = computed(() => {
+	const name = tier.value || 'community';
+	return name.charAt(0).toUpperCase();
+});
+const editionTitle = computed(() => {
+	const name = tier.value || 'community';
+	return t(`message.pages.edition.tier${name.charAt(0).toUpperCase()}${name.slice(1)}`);
+});
 
 const route = useRoute();
 const router = useRouter();
@@ -319,16 +324,28 @@ watch(
 		line-height: 1;
 		cursor: default;
 
-		&.is-community {
+		&.is-free {
 			background: rgba(144, 147, 153, 0.2);
 			color: var(--next-bg-columnsMenuBarColor);
 			border: 1px solid rgba(255, 255, 255, 0.1);
 		}
 
-		&.is-enterprise {
+		&.is-licensed {
+			background: linear-gradient(135deg, #409eff, #36cfc9);
+			color: #fff;
+			box-shadow: 0 2px 6px rgba(64, 158, 255, 0.35);
+		}
+
+		&.is-grace {
 			background: linear-gradient(135deg, #f39c12, #e67e22);
 			color: #fff;
 			box-shadow: 0 2px 6px rgba(243, 156, 18, 0.35);
+		}
+
+		&.is-blocked {
+			background: linear-gradient(135deg, #f56c6c, #c45656);
+			color: #fff;
+			box-shadow: 0 2px 6px rgba(245, 108, 108, 0.35);
 		}
 	}
 

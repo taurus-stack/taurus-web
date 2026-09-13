@@ -9,14 +9,41 @@ import { request } from '/@/utils/service';
 
 export const EDITION_API_PREFIX = '/api/taurus/edition/';
 
+export type LicenseState = 'free' | 'licensed' | 'grace' | 'blocked';
+export type TierName = 'community' | 'starter' | 'professional' | 'enterprise' | 'ultimate';
+
+export interface EditionQuota {
+	max_hosts: number | null;
+	max_users: number | null;
+	max_scheduled_tasks: number | null;
+	max_script_versions_per_script: number | null;
+	max_concurrent_executions: number | null;
+	max_workflows: number | null;
+}
+
+export interface ServiceLevel {
+	level: string;
+	sla: string;
+	channels: string[];
+}
+
 export interface EditionLicense {
 	valid: boolean;
-	tier: 'community' | 'starter' | 'professional' | 'enterprise' | 'ultimate';
+	/** License 状态机：free/licensed/grace/blocked */
+	state: LicenseState;
+	tier: TierName;
+	customer_id: string | null;
+	customer_name: string | null;
 	expires_at: string | null;
-	customer: string | null;
-	hosts_used?: number;
-	users_used?: number;
+	fingerprint_ok: boolean;
+	quota: EditionQuota;
+	features: string[];
 	warnings: Array<{ code: string; message?: string; days_left?: number }>;
+	grace_days_left: number | null;
+	branding_allowed: boolean;
+	update_channels: string[];
+	service_level: ServiceLevel;
+	hosts_used: number | null;
 }
 
 export interface EditionUpgrade {
@@ -36,19 +63,23 @@ export interface FeatureGroup {
 }
 
 export interface EditionInfo {
-	edition: 'community' | 'enterprise';
-	tier: EditionLicense['tier'];
+	edition: 'community';
+	tier: TierName;
 	features: string[];
 	feature_count: number;
-	quota: Record<string, number | null>;
+	quota: EditionQuota;
 	license: EditionLicense;
+	branding_allowed: boolean;
+	update_channels: string[];
+	service_level: ServiceLevel;
+	hosts_used: number | null;
 	upgrade: EditionUpgrade;
 	feature_groups?: FeatureGroup[];
 }
 
 export interface EditionFeatures {
-	edition: 'community' | 'enterprise';
-	tier: EditionLicense['tier'];
+	edition: 'community';
+	tier: TierName;
 	features: string[];
 }
 

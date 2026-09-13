@@ -407,10 +407,10 @@ const eeT = (key: string, fallback: string) => {
 };
 const triggerEeUpgrade = (code: string, customDesc?: string) => {
     ElMessageBox.confirm(
-        customDesc || eeT('enterpriseOnlyDesc', '该功能仅在 Taurus Ops 企业版中提供。升级到企业版即可解锁全部高级能力。'),
-        eeT('enterpriseOnlyTitle', '企业版专属功能'),
+        customDesc || eeT('enterpriseOnlyDesc', '当前免费版主机配额为 50 台，如需更多主机配额与商业支持服务，请升级服务等级。'),
+        eeT('enterpriseOnlyTitle', '升级服务等级'),
         {
-            confirmButtonText: eeT('upgradeAction', '立即升级'),
+            confirmButtonText: eeT('upgradeAction', '了解升级方案'),
             cancelButtonText: eeT('dismiss', '稍后再说'),
             type: 'info',
             showCancelButton: true,

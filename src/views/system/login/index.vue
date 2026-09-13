@@ -8,8 +8,8 @@
 						<h1>{{ t('message.siteTitle') }}</h1>
 						<p>
 							{{ t('message.siteName') }}
-							<span v-if="editionLoaded" class="login-edition-badge" :class="'is-' + edition">
-								{{ edition === 'enterprise' ? t('message.editionEnterprise') : t('message.editionCommunity') }}
+							<span v-if="editionLoaded" class="login-edition-badge" :class="'is-' + licenseState">
+								{{ tierBadgeText }}
 							</span>
 						</p>
 					</div>
@@ -86,7 +86,7 @@
 </template>
 
 <script setup lang="ts" name="loginIndex">
-import { defineAsyncComponent, onMounted, reactive } from 'vue';
+import { defineAsyncComponent, onMounted, reactive, computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
 import { Local } from '/@/utils/storage';
@@ -125,9 +125,13 @@ const { t, locale } = useI18n();
 const storesThemeConfig = useThemeConfig();
 const { themeConfig } = storeToRefs(storesThemeConfig);
 
-// Edition store — 登录页也要显示 CE/EE 标识
+// License 状态 — 登录页展示服务等级标识（免费/商业五级）
 const editionStore = useEditionStore();
-const { edition, loaded: editionLoaded } = storeToRefs(editionStore);
+const { tier, licenseState, loaded: editionLoaded } = storeToRefs(editionStore);
+const tierBadgeText = computed(() => {
+	const name = tier.value || 'community';
+	return t(`message.pages.edition.tier${name.charAt(0).toUpperCase()}${name.slice(1)}`);
+});
 
 // 切换语言：更新 i18n + 持久化到 localStorage
 const onLanguageChange = (lang: string) => {
@@ -251,17 +255,31 @@ onMounted(() => {
 		backdrop-filter: blur(4px);
 		white-space: nowrap;
 
-		&.is-community {
+		&.is-free {
 			background: rgba(255, 255, 255, 0.2);
 			color: rgba(255, 255, 255, 0.9);
 			border: 1px solid rgba(255, 255, 255, 0.3);
 		}
 
-		&.is-enterprise {
+		&.is-licensed {
+			background: linear-gradient(135deg, #409eff, #36cfc9);
+			color: #fff;
+			border: none;
+			box-shadow: 0 2px 6px rgba(64, 158, 255, 0.4);
+		}
+
+		&.is-grace {
 			background: linear-gradient(135deg, #f39c12, #e67e22);
 			color: #fff;
 			border: none;
 			box-shadow: 0 2px 6px rgba(243, 156, 18, 0.4);
+		}
+
+		&.is-blocked {
+			background: linear-gradient(135deg, #f56c6c, #c45656);
+			color: #fff;
+			border: none;
+			box-shadow: 0 2px 6px rgba(245, 108, 108, 0.4);
 		}
 	}
 

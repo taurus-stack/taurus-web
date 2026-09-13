@@ -17,6 +17,9 @@
         <el-col :span="4">
           <el-input v-if="item.edit" v-model="item.title" style="display: inline-block; width: 200px" :placeholder="t('message.pages.config.formContent.titlePlaceholder')"></el-input>
           <span v-else>{{ item.title }}</span>
+          <el-tag v-if="isBrandingLocked(item)" size="small" type="info" effect="plain" class="brand-lock-tag">
+            🔒 {{ t('message.pages.edition.brandingLockTag') }}
+          </el-tag>
         </el-col>
         <el-col :span="4" >
           <el-input v-if="item.edit" v-model="item.new_key" style="width: 200px" :placeholder="t('message.pages.config.formContent.keyPrefix')">
@@ -27,6 +30,8 @@
           <span v-else>{{ editableTabsItem.key }}.{{ item.key }}</span>
         </el-col>
         <el-col :span="10">
+          <!-- 白标定制为授权权益：未授权时品牌配置项整组禁用（fieldset 原生禁用全部内部控件） -->
+          <fieldset :disabled="isBrandingLocked(item)" class="brand-fieldset">
           <!-- text -->
           <el-input
               :key="index"
@@ -218,18 +223,21 @@
               <el-button size="mini" @click="onAppend('xTable_' + item.key)">{{ t('message.pages.config.formContent.append') }}</el-button>
             </div>
           </div>
+          </fieldset>
         </el-col>
         <el-col :span="2" :offset="1">
-          <el-switch v-model="item.status" active-color="#13ce66" inactive-color="#ff4949"> </el-switch>
+          <el-switch v-model="item.status" :disabled="isBrandingLocked(item)" active-color="#13ce66" inactive-color="#ff4949"> </el-switch>
         </el-col>
         <el-col :span="3">
-          <el-button v-if="item.edit" size="mini" type="primary" :icon="Finished" @click="onEditSave(item)">{{ t('message.pages.config.formContent.save') }}</el-button>
-          <el-button v-else size="mini" type="primary" :icon="Edit" @click="onEdit(index)"></el-button>
-          <el-popconfirm :title="t('message.pages.config.formContent.deleteConfirm')" @confirm="onDelRow(item)">
-            <template #reference>
-              <el-button size="mini" type="danger" :icon="Delete" ></el-button>
-            </template>
-          </el-popconfirm>
+          <template v-if="!isBrandingLocked(item)">
+            <el-button v-if="item.edit" size="mini" type="primary" :icon="Finished" @click="onEditSave(item)">{{ t('message.pages.config.formContent.save') }}</el-button>
+            <el-button v-else size="mini" type="primary" :icon="Edit" @click="onEdit(index)"></el-button>
+            <el-popconfirm :title="t('message.pages.config.formContent.deleteConfirm')" @confirm="onDelRow(item)">
+              <template #reference>
+                <el-button size="mini" type="danger" :icon="Delete" ></el-button>
+              </template>
+            </el-popconfirm>
+          </template>
         </el-col>
       </el-form-item>
       <el-form-item>
@@ -243,14 +251,37 @@
 import * as api from '../api';
 import { dictionary } from '/@/utils/dictionary';
 import { getBaseURL } from '/@/utils/baseUrl';
-import { ref, reactive, watch, nextTick,inject  } from 'vue';
+import { ref, reactive, watch, nextTick,inject,onMounted  } from 'vue';
 import type { FormInstance, FormRules, TableInstance } from 'element-plus';
 import { successMessage, errorMessage } from '/@/utils/message';
 import { Session } from '/@/utils/storage';
 import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 import {Edit,Finished,Delete} from "@element-plus/icons-vue";
+import { useEdition } from '/@/editions/index';
+
+// 白标定制为商业授权权益（与后端 BRANDING_CONFIG_KEYS 保持一致）：
+// 未授权（branding_allowed=false）时品牌配置项只读，后端亦会强校验拦截
+const BRANDING_CONFIG_KEYS = new Set([
+	'web_title',
+	'web_favicon',
+	'site_title',
+	'site_name',
+	'site_logo',
+	'login_background',
+	'copyright',
+	'keep_record',
+]);
+const { brandingAllowed, ensureLoaded: ensureEditionLoaded } = useEdition();
+const isBrandingLocked = (item: any): boolean => {
+	return !!item && BRANDING_CONFIG_KEYS.has(item.key) && !brandingAllowed.value;
+};
+
 const props = defineProps(['options', 'editableTabsItem']);
+
+onMounted(() => {
+	ensureEditionLoaded(false);
+});
 
 let formData: any = reactive({});
 let formList: any = ref([]);
@@ -511,5 +542,36 @@ watch(
 <style scoped>
 :deep(.el-upload-list--picture-card){
   text-align: center;
+}
+.brand-fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+.brand-fieldset:disabled {
+  opacity: 0.7;
+  pointer-events: none;
+  cursor: not-allowed;
+
+  :deep(.el-input__wrapper),
+  :deep(.el-textarea__inner),
+  :deep(.el-select__wrapper) {
+    background-color: var(--el-fill-color-light);
+    box-shadow: 0 0 0 1px var(--el-border-color) inset;
+    cursor: not-allowed;
+  }
+  :deep(.el-input__inner),
+  :deep(.el-textarea__inner) {
+    color: var(--el-text-color-placeholder);
+    -webkit-text-fill-color: var(--el-text-color-placeholder);
+    cursor: not-allowed;
+  }
+  :deep(.el-switch) {
+    opacity: 0.6;
+  }
+}
+.brand-lock-tag {
+  margin-left: 8px;
 }
 </style>
