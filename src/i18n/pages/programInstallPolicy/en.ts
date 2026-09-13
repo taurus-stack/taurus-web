@@ -42,7 +42,7 @@ export default {
 					priorityPlaceholder: 'Lower = higher priority',
 					userPlaceholder: 'Empty means current user',
 					groupPlaceholder: 'Run group',
-					matchRulesPlaceholder: 'JSON format, e.g. {"host_type": "linux", "status": 1}',
+					matchRulesPlaceholder: 'JSON format, e.g. {\'{\'}"host_type": "linux", "status": 1{\'}\'}',
 					configPlaceholder: 'JSON format config',
 				},
 				bool: {

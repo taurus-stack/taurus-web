@@ -53,7 +53,7 @@ export default {
                 formPlaceholderCron: '分 時 日 月 週',
                 formHelperDagVersion: '留空則使用工作流目前發佈版本',
                 formPlaceholderDagVersion: '目前發佈版',
-                formPlaceholderEnvs: 'JSON 格式，如 {"KEY": "value"}',
+                formPlaceholderEnvs: 'JSON 格式，如 {\'{\'}"KEY": "value"{\'}\'}',
                 formPlaceholderArgs: 'JSON 陣列格式，如 ["arg1", "arg2"]',
 
                 // ===== validation =====

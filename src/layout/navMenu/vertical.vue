@@ -22,7 +22,7 @@
 				<SubItem :chil="val.children" />
 			</el-sub-menu>
 			<template v-else>
-				<el-menu-item :index="val.path" :key="val.path" @click.stop="onTopMenuClick(val, $event)">
+				<el-menu-item :index="val.path" :key="val.path" @click="onTopMenuClick(val)">
 					<SvgIcon :name="val.meta.icon" />
 					<template #title v-if="!val.meta.isLink || (val.meta.isLink && val.meta.isIframe)">
 						<span class="nav-menu-title">
@@ -79,7 +79,7 @@ const setParentHighlight = (currentRoute: RouteToFrom) => {
 	else return path;
 };
 
-const onTopMenuClick = (val: any, _e?: MouseEvent) => {
+const onTopMenuClick = (val: any) => {
 	if (!val.meta?.isLink || (val.meta?.isLink && val.meta?.isIframe)) return;
 	other.handleOpenLink(val);
 };

@@ -12,7 +12,7 @@
 			<sub-item :chil="val.children" />
 		</el-sub-menu>
 		<template v-else>
-			<el-menu-item :index="val.path" :key="val.path" @click.stop="onMenuItemClick(val, $event)">
+			<el-menu-item :index="val.path" :key="val.path" @click="onMenuItemClick(val)">
 				<template v-if="!val.meta.isLink || (val.meta.isLink && val.meta.isIframe)">
 					<SvgIcon :name="val.meta.icon" />
 					<span class="nav-menu-title">{{ $t(val.meta.title) }}</span>
@@ -45,7 +45,7 @@ const chils = computed(() => {
 	return <RouteItems>props.chil;
 });
 
-const onMenuItemClick = (val: any, _e?: MouseEvent) => {
+const onMenuItemClick = (val: any) => {
 	if (!val.meta?.isLink || (val.meta?.isLink && val.meta?.isIframe)) return;
 	other.handleOpenLink(val);
 };

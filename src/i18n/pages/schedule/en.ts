@@ -53,7 +53,7 @@ export default {
                 formPlaceholderCron: 'min hour day month week',
                 formHelperDagVersion: 'Leave empty to use the workflow\'s current published version',
                 formPlaceholderDagVersion: 'Current Published',
-                formPlaceholderEnvs: 'JSON format, e.g. {"KEY": "value"}',
+                formPlaceholderEnvs: 'JSON format, e.g. {\'{\'}"KEY": "value"{\'}\'}',
                 formPlaceholderArgs: 'JSON array format, e.g. ["arg1", "arg2"]',
 
                 // ===== validation =====

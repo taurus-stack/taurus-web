@@ -70,7 +70,7 @@ export default {
                     componentNamePlaceholder: '请输入组件名称',
                     linkUrlPlaceholder: '请输入外链接地址',
                     remarkPlaceholder: '请输入备注',
-                    tokenTip: '输入{{token}}可自动替换系统 token',
+                    tokenTip: '输入{\'{\'}{\'{\'}token{\'}\'}{\'}\'}可自动替换系统 token',
                     alertLine1: '1.红色星号表示必填;',
                     alertLine2: '2.添加菜单，如果是目录，组件地址为空即可;',
                     alertLine3: '3.添加根节点菜单，父级菜单为空即可;',
