@@ -70,7 +70,7 @@ export default {
                     componentNamePlaceholder: '請輸入組件名稱',
                     linkUrlPlaceholder: '請輸入外鏈接地址',
                     remarkPlaceholder: '請輸入備註',
-                    tokenTip: '輸入{{token}}可自動替換系統 token',
+                    tokenTip: '輸入{\'{\'}{\'{\'}token{\'}\'}{\'}\'}可自動替換系統 token',
                     alertLine1: '1.紅色星號表示必填;',
                     alertLine2: '2.添加菜單，如果是目錄，組件地址為空即可;',
                     alertLine3: '3.添加根節點菜單，父級菜單為空即可;',

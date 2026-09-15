@@ -5,8 +5,12 @@
 		<LockScreen v-if="themeConfig.isLockScreen" />
 		<Setings ref="setingsRef" v-show="themeConfig.lockScreenTime > 1" />
 		<CloseFull v-if="!themeConfig.isLockScreen" />
-		<!-- 版本更新弹窗（已启用） + M1.8 Edition CE→EE 升级引导弹窗（合并进 Upgrade 组件） -->
-		<Upgrade v-if="getVersion || showEditionBanner" :mode="getVersion ? 'version' : 'edition'" />
+		<!-- 服务等级/License 升级引导弹窗（mode=edition，事件唤起）；version 模式为版本更新预留 -->
+		<Upgrade
+			v-if="getVersion || showEditionBanner"
+			:mode="getVersion ? 'version' : 'edition'"
+			@close="_showEditionBannerRef = false"
+		/>
 	</el-config-provider>
 </template>
 
@@ -21,9 +25,6 @@ import other from '/@/utils/other';
 import { Local, Session } from '/@/utils/storage';
 import mittBus from '/@/utils/mitt';
 import setIntroduction from '/@/utils/setIconfont';
-// M1.8 Edition Gate
-import { useEdition } from '/@/editions/index';
-
 // Import components
 const LockScreen = defineAsyncComponent(() => import('/@/layout/lockScreen/index.vue'));
 const Setings = defineAsyncComponent(() => import('/@/layout/navBars/breadcrumb/setings.vue'));
@@ -40,31 +41,11 @@ const { themeConfig } = storeToRefs(storesThemeConfig);
 import websocket from '/@/utils/websocket';
 import { ElNotification } from 'element-plus';
 
-// M1.8 Edition Gate: CE 版是否需要显示升级引导（每 7 天弹一次；事件可强制触发）
-const { isCommunity, ensureLoaded: editionEnsureLoaded } = useEdition();
+// License 升级引导弹窗：由页面内"升级服务等级/联系商务"动作通过 taurus:edition-upgrade 事件唤起
 const _showEditionBannerRef = ref(false);
-const CE_BANNER_INTERVAL_MS = 7 * 24 * 60 * 60 * 1000; // 7 天
-const CE_BANNER_LAST_TS = 'taurus.ce_banner_last_shown_at';
-async function _recomputeEditionBanner() {
-	try {
-		await editionEnsureLoaded(false);
-	} catch (_e) { /* noop */ }
-	if (!isCommunity.value) {
-		_showEditionBannerRef.value = false;
-		return;
-	}
-	// 登录页不显示
-	if (route.path === '/login') {
-		_showEditionBannerRef.value = false;
-		return;
-	}
-	_showEditionBannerRef.value = false;
-}
 const showEditionBanner = computed(() => _showEditionBannerRef.value);
-
-// 监听 taurus:edition-upgrade 事件：v-feature.requireFeature 触发时可强开弹窗
-function _onForceEditionUpgrade(_evt: Event) {
-	_showEditionBannerRef.value = true;
+function _onForceEditionUpgrade() {
+	if (route.path !== '/login') _showEditionBannerRef.value = true;
 }
 
 // Get version number
@@ -88,8 +69,6 @@ onBeforeMount(() => {
 });
 // On page load
 onMounted(() => {
-	// M1.8 Edition Banner
-	_recomputeEditionBanner();
 	window.addEventListener('taurus:edition-upgrade', _onForceEditionUpgrade);
 	nextTick(() => {
 		// Listen for layout config drawer open click
@@ -117,10 +96,8 @@ watch(
 	() => route.path,
 	async () => {
 		other.useTitle();
-		other.useFavicon();
-		// M1.8: 路由切换时重新评估 Banner 是否显示
-		await _recomputeEditionBanner();
-		if (!websocket.websocket) {
+	other.useFavicon();
+	if (!websocket.websocket) {
 			// websocket module
 			try {
 				websocket.init(wsReceive);

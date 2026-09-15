@@ -12,39 +12,27 @@
 				:index="val.path"
 				v-if="val.children && val.children.length > 0"
 				:key="val.path"
-				:class="{ 'ee-gate-card': !!val.meta?._eeGate, 'is-ee-gate': !!val.meta?._eeGate }"
-				:title="val.meta?._eeGate ? eeTooltipTxt() : ''"
-				@click.stop="onTopSubMenuClick(val, $event)"
 			>
 				<template #title>
 					<SvgIcon :name="val.meta.icon" />
 					<span class="nav-menu-title">
 						{{ $t(val.meta.title) }}
-						<el-tag v-if="val.meta?._eeGate" size="small" type="warning" effect="plain" class="ee-menu-badge">EE</el-tag>
 					</span>
 				</template>
 				<SubItem :chil="val.children" />
 			</el-sub-menu>
 			<template v-else>
-				<el-menu-item
-					:index="val.path"
-					:key="val.path"
-						:class="{ 'ee-gate-card': !!val.meta?._eeGate, 'is-ee-gate': !!val.meta?._eeGate }"
-					:title="val.meta?._eeGate ? eeTooltipTxt() : ''"
-					@click.stop="onTopMenuClick(val, $event)"
-				>
+				<el-menu-item :index="val.path" :key="val.path" @click="onTopMenuClick(val)">
 					<SvgIcon :name="val.meta.icon" />
 					<template #title v-if="!val.meta.isLink || (val.meta.isLink && val.meta.isIframe)">
 						<span class="nav-menu-title">
 							{{ $t(val.meta.title) }}
-							<el-tag v-if="val.meta?._eeGate" size="small" type="warning" effect="plain" class="ee-menu-badge">EE</el-tag>
 						</span>
 					</template>
 					<template #title v-else>
 						<a class="w100" @click.prevent.stop="onALinkClick(val, $event)">
 							<span class="nav-menu-title">
 								{{ $t(val.meta.title) }}
-								<el-tag v-if="val.meta?._eeGate" size="small" type="warning" effect="plain" class="ee-menu-badge">EE</el-tag>
 							</span>
 						</a>
 					</template>
@@ -60,7 +48,6 @@ import { useRoute, onBeforeRouteUpdate, RouteRecordRaw } from 'vue-router';
 import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
 import other from '/@/utils/other';
-import { eeTooltipTxt, triggerUpgradeBanner } from '/@/editions/index';
 
 const SubItem = defineAsyncComponent(() => import('/@/layout/navMenu/subItem.vue'));
 
@@ -92,29 +79,11 @@ const setParentHighlight = (currentRoute: RouteToFrom) => {
 	else return path;
 };
 
-const onTopSubMenuClick = (val: any, e: MouseEvent) => {
-	if (val.meta?._eeGate) {
-		e.preventDefault();
-		e.stopImmediatePropagation();
-		triggerUpgradeBanner(val.meta?._eeCodes);
-		return false;
-	}
+const onTopMenuClick = (val: any) => {
+	if (!val.meta?.isLink || (val.meta?.isLink && val.meta?.isIframe)) return;
+	other.handleOpenLink(val);
 };
-const onTopMenuClick = (val: any, e: MouseEvent) => {
-	if (val.meta?._eeGate) {
-		e.preventDefault();
-		e.stopImmediatePropagation();
-		triggerUpgradeBanner(val.meta?._eeCodes);
-		return false;
-	}
-};
-const onALinkClick = (val: any, e: MouseEvent) => {
-	if (val.meta?._eeGate) {
-		e.preventDefault();
-		e.stopImmediatePropagation();
-		triggerUpgradeBanner(val.meta?._eeCodes);
-		return false;
-	}
+const onALinkClick = (val: any, _e?: MouseEvent) => {
 	other.handleOpenLink(val);
 };
 
@@ -142,9 +111,5 @@ watch(
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-}
-.ee-menu-badge {
-	margin-left: 2px;
-	flex-shrink: 0;
 }
 </style>

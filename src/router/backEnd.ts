@@ -43,7 +43,7 @@ export async function initBackEndControlRoutes() {
 	useDeptInfoStore().setFromBootstrap(dept);
 	DictionaryStore().setFromBootstrap(dictionary);
 	const {frameIn,frameOut} = handleMenu(menu)
-	// M1.7 — Edition Gate: 根据 menu.requiresFeature / feature_code 过滤
+	// 全功能版本：菜单透传，不做功能门禁过滤
 	const {frameIn: frameInFiltered, frameOut: frameOutFiltered} = filterMenuByEdition({frameIn, frameOut});
 	dynamicRoutes[0].children = await backEndComponent(frameInFiltered);
 	await setAddRoute(frameOutFiltered);
@@ -124,65 +124,13 @@ export async function setAddRoute(frameOutOverride?: any[]) {
 }
 
 // ================================================================
-// M1.7 — Edition Gate: 后端菜单树 **不再剔除** EE 菜单，改为标记保留
-//   · 菜单对象上若有 meta.requiresFeature / requiresFeature 等任一属性
-//     且 Edition 不具备 → 打 meta._eeGate=true、meta._eeCodes=[...] 标记
-//   · 子节点递归处理（无论父节点是否 gate），保证侧边栏/顶栏统一渲染
-//     由渲染层（vertical.vue / horizontal.vue / subItem.vue）根据标记：
-//       置灰 + EE 标签 + 点击拦截升级弹窗
-//   · 仍保留：meta.isHide 的隐藏逻辑（非 Edition Gate）与此模块无关
-// ================================================================
-function _extractFeatureCode(item: any): string | string[] | undefined {
-	const v =
-		item?.meta?.requiresFeature ??
-		item?.meta?.requires_feature ??
-		item?.meta?.feature_code ??
-		item?.requiresFeature ??
-		item?.requires_feature ??
-		item?.feature_code ??
-		item?.featureCode;
-	if (!v) return undefined;
-	if (Array.isArray(v)) return v.filter(Boolean);
-	if (typeof v === 'string') return v.split(',').map((s) => s.trim()).filter(Boolean);
-	return undefined;
-}
-
-function _hasRequiredFeature(code: string | string[] | undefined, editionStore: ReturnType<typeof useEditionStore>): boolean {
-	if (!code) return true;
-	const codes = Array.isArray(code) ? code : [code];
-	if (!codes.length) return true;
-	return codes.some((c) => editionStore.hasFeature(c));
-}
-
-function _markTree(nodes: any[], editionStore: ReturnType<typeof useEditionStore>): any[] {
-	if (!nodes) return [];
-	const result: any[] = [];
-	for (const raw of nodes) {
-		const node = { ...raw };
-		// 确保 meta 是独立对象，避免 mutation 影响其他引用
-		const baseMeta = node.meta || {};
-		node.meta = { ...baseMeta };
-		const code = _extractFeatureCode(node);
-		const hasFeat = _hasRequiredFeature(code, editionStore);
-		if (!hasFeat && code) {
-			const codes = Array.isArray(code) ? code : [code];
-			node.meta._eeGate = true;
-			node.meta._eeCodes = codes.filter(Boolean);
-		}
-		// 子树递归标记（不影响父节点是否保留——所有节点都保留，只标记）
-		if (node.children && node.children.length) {
-			node.children = _markTree(node.children, editionStore);
-		}
-		result.push(node);
-	}
-	return result;
-}
-
+// 单一全功能版本：功能不做门禁，菜单全部透传。
+// 菜单数据中的 requiresFeature 历史字段保留但不再处理；
+// 版本差异仅体现在主机配额与服务等级（License），与菜单可见性无关。
 export function filterMenuByEdition(params: { frameIn: any[]; frameOut: any[] }): { frameIn: any[]; frameOut: any[] } {
-	const store = useEditionStore();
 	return {
-		frameIn: _markTree(params.frameIn || [], store),
-		frameOut: _markTree(params.frameOut || [], store),
+		frameIn: params.frameIn || [],
+		frameOut: params.frameOut || [],
 	};
 }
 

@@ -7,8 +7,8 @@
 			</el-scrollbar>
 			<div class="layout-aside-footer" v-if="!themeConfig.isCollapse || state.clientWidth <= 1000">
 				<div class="aside-version-info">
-					<span class="aside-version-badge" :class="'is-' + edition">
-						{{ edition === 'enterprise' ? $t('editionEnterprise') : $t('editionCommunity') }}
+					<span class="aside-version-badge" :class="'is-' + licenseState" :title="$t('message.pages.edition.pageTitle')">
+						{{ $t(tierBadgeText) }}
 					</span>
 					<span class="aside-version-text">v{{ appVersion }}</span>
 				</div>
@@ -40,7 +40,11 @@ const storesEdition = useEditionStore();
 const { routesList } = storeToRefs(stores);
 const { themeConfig } = storeToRefs(storesThemeConfig);
 const { isTagsViewCurrenFull } = storeToRefs(storesTagsViewRoutes);
-const { edition } = storeToRefs(storesEdition);
+const { tier, licenseState } = storeToRefs(storesEdition);
+const tierBadgeText = computed(() => {
+	const name = tier.value || 'community';
+	return `message.pages.edition.tier${name.charAt(0).toUpperCase()}${name.slice(1)}`;
+});
 // @ts-ignore __VERSION__ 由 vite define 在编译时注入
 const appVersion = __VERSION__;
 storesEdition.ensureLoaded();
@@ -191,17 +195,31 @@ watch(
 		letter-spacing: 0.5px;
 		white-space: nowrap;
 
-		&.is-community {
+		&.is-free {
 			background: rgba(144, 147, 153, 0.15);
 			color: var(--el-text-color-secondary);
 			border: 1px solid var(--el-border-color);
 		}
 
-		&.is-enterprise {
+		&.is-licensed {
+			background: linear-gradient(135deg, #409eff, #36cfc9);
+			color: #fff;
+			border: none;
+			box-shadow: 0 2px 6px rgba(64, 158, 255, 0.3);
+		}
+
+		&.is-grace {
 			background: linear-gradient(135deg, #f39c12, #e67e22);
 			color: #fff;
 			border: none;
 			box-shadow: 0 2px 6px rgba(243, 156, 18, 0.3);
+		}
+
+		&.is-blocked {
+			background: linear-gradient(135deg, #f56c6c, #c45656);
+			color: #fff;
+			border: none;
+			box-shadow: 0 2px 6px rgba(245, 108, 108, 0.3);
 		}
 	}
 

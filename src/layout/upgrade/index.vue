@@ -7,6 +7,7 @@
 			:show-close="mode === 'edition'"
 			:close-on-click-modal="mode === 'edition'"
 			:close-on-press-escape="mode === 'edition'"
+			@close="emit('close')"
 		>
 			<!-- ======================= 版本更新弹（原 mode=version）==================== -->
 			<template v-if="mode === 'version'">
@@ -29,7 +30,7 @@
 				</div>
 			</template>
 
-			<!-- ======================= M1.8 Edition 升级引导弹（mode=edition）==================== -->
+			<!-- ======================= 服务等级 / 授权升级引导（mode=edition）==================== -->
 			<template v-else>
 				<div class="edition-title">
 					<div class="edition-title-wrap">
@@ -41,49 +42,100 @@
 				</div>
 
 				<div class="edition-content">
-					<!-- 功能对比矩阵（3 大核心卖点 + 具体条目） -->
-					<div class="edition-matrix">
-						<div class="edition-matrix-row header">
-							<div class="col-func">{{ t('message.pages.edition.matrixHeaderFunc') }}</div>
-							<div class="col-ce">{{ t('message.pages.edition.matrixHeaderCe') }}</div>
-							<div class="col-ee">{{ t('message.pages.edition.matrixHeaderEe') }}</div>
-						</div>
-						<div v-for="row in editionMatrix" :key="row.name" class="edition-matrix-row">
-							<div class="col-func">
-								<strong>{{ row.name }}</strong>
-								<div class="col-func-desc">{{ row.desc }}</div>
-							</div>
-							<div class="col-ce">
-								<el-tag v-if="row.ce" type="success" effect="plain" size="small">✓</el-tag>
-								<span v-else class="muted">{{ row.ceText }}</span>
-							</div>
-							<div class="col-ee">
-								<el-tag type="warning" effect="dark" size="small">{{ row.ee }}</el-tag>
-							</div>
+					<!-- 当前授权状态 -->
+					<div class="edition-status">
+						<el-tag :type="stateTagType" effect="dark" size="default">{{ stateLabel }}</el-tag>
+						<span class="edition-status-tier">{{ tierLabel }}</span>
+						<span v-if="license.customer_name" class="edition-status-customer">{{ license.customer_name }}</span>
+						<div class="edition-status-meta">
+							<span>{{ t('message.pages.edition.fieldExpires') }}：{{ license.expires_at || t('message.pages.edition.expiresNone') }}</span>
+							<span v-if="license.state === 'grace' && license.grace_days_left !== null">
+								{{ t('message.pages.edition.graceLeft', { days: license.grace_days_left }) }}
+							</span>
+							<span v-if="license.fingerprint_ok === false" class="is-danger">
+								{{ t('message.pages.edition.fingerprintBad') }}
+							</span>
 						</div>
 					</div>
 
-					<!-- 当前 CE 配额信息 -->
-					<div class="edition-quota">
-						<strong>{{ t('message.pages.edition.quotaTitle') }}</strong>
-						<ul>
-							<li>{{ t('message.pages.edition.quotaMaxHosts') }}：<b>{{ quota.max_hosts ?? '∞' }}</b> 台</li>
-							<li>{{ t('message.pages.edition.quotaMaxUsers') }}：<b>{{ quota.max_users ?? '∞' }}</b> 人</li>
-							<li>{{ t('message.pages.edition.quotaMaxScheduledTasks') }}：<b>{{ quota.max_scheduled_tasks ?? '∞' }}</b> 条</li>
-							<li>{{ t('message.pages.edition.quotaMaxConcurrentExecutions') }}：<b>{{ quota.max_concurrent_executions ?? '∞' }}</b> 个</li>
-						</ul>
-					</div>
-
-					<!-- License 告警（仅 EE 才会出现） -->
-					<div v-if="license && license.warnings && license.warnings.length" class="edition-warn">
+					<!-- 宽限 / 阻断 / 指纹等告警 -->
+					<div v-if="license.warnings && license.warnings.length" class="edition-warn">
 						<el-alert
 							v-for="(w, i) in license.warnings"
 							:key="i"
 							:title="w.message || w.code"
-							type="warning"
+							:type="license.state === 'blocked' ? 'error' : 'warning'"
 							:closable="false"
 							show-icon
 						/>
+					</div>
+
+					<!-- 主机配额用量 -->
+					<div class="edition-quota">
+						<strong>{{ t('message.pages.edition.hostQuotaTitle') }}</strong>
+						<div class="edition-quota-usage">
+							<template v-if="quota.max_hosts === null">
+								{{ t('message.pages.edition.hostUsageUnlimited', { used: license.hosts_used ?? 0 }) }}
+							</template>
+							<template v-else>
+								<el-progress
+									:percentage="hostUsagePct"
+									:status="hostUsagePct >= 100 ? 'exception' : undefined"
+									:stroke-width="10"
+									class="edition-quota-bar"
+								/>
+								<span>
+									{{ t('message.pages.edition.hostUsage', { used: license.hosts_used ?? 0, total: quota.max_hosts }) }}
+								</span>
+							</template>
+						</div>
+						<div class="edition-quota-note">{{ t('message.pages.edition.otherQuotaNote') }}</div>
+					</div>
+
+					<!-- 服务等级权益 -->
+					<div class="edition-entitle">
+						<div class="edition-entitle-row">
+							<span class="k">{{ t('message.pages.edition.svcLevel') }}</span>
+							<span class="v">{{ license.service_level?.level || '—' }}</span>
+						</div>
+						<div class="edition-entitle-row">
+							<span class="k">{{ t('message.pages.edition.svcSla') }}</span>
+							<span class="v">{{ license.service_level?.sla || '—' }}</span>
+						</div>
+						<div class="edition-entitle-row">
+							<span class="k">{{ t('message.pages.edition.svcChannels') }}</span>
+							<span class="v">{{ (license.service_level?.channels || []).join('、') || '—' }}</span>
+						</div>
+						<div class="edition-entitle-row">
+							<span class="k">{{ t('message.pages.edition.branding') }}</span>
+							<span class="v">
+								<el-tag :type="license.branding_allowed ? 'success' : 'info'" size="small">
+									{{ license.branding_allowed ? t('message.pages.edition.brandingAllowed') : t('message.pages.edition.brandingDenied') }}
+								</el-tag>
+							</span>
+						</div>
+						<div class="edition-entitle-row">
+							<span class="k">{{ t('message.pages.edition.updateChannels') }}</span>
+							<span class="v">{{ (license.update_channels || []).join('、') }}</span>
+						</div>
+					</div>
+
+					<!-- 免费版 vs 商业授权 对比 -->
+					<div class="edition-compare-title">{{ t('message.pages.edition.compareTitle') }}</div>
+					<div class="edition-matrix">
+						<div class="edition-matrix-row header">
+							<div class="col-func">{{ t('message.pages.edition.matrixHeaderFunc') }}</div>
+							<div class="col-ce">{{ t('message.pages.edition.matrixHeaderFree') }}</div>
+							<div class="col-ee">{{ t('message.pages.edition.matrixHeaderPaid') }}</div>
+						</div>
+						<div v-for="row in compareRows" :key="row.name" class="edition-matrix-row">
+							<div class="col-func">
+								<strong>{{ row.name }}</strong>
+								<div class="col-func-desc">{{ row.desc }}</div>
+							</div>
+							<div class="col-ce">{{ row.free }}</div>
+							<div class="col-ee">{{ row.paid }}</div>
+						</div>
 					</div>
 				</div>
 
@@ -105,14 +157,17 @@ import { useI18n } from 'vue-i18n';
 import { storeToRefs } from 'pinia';
 import { useThemeConfig } from '/@/stores/themeConfig';
 import { Local, Session } from '/@/utils/storage';
-// M1.8 Edition
 import { useEdition } from '/@/editions/index';
+import type { LicenseState, TierName } from '/@/api/taurus/edition/api';
 
 type UpgradeMode = 'version' | 'edition';
 
 const props = defineProps<{
-	/** version = 版本更新；edition = CE→EE 商业版引导 */
+	/** version = 版本更新；edition = 服务等级/授权升级引导 */
 	mode?: UpgradeMode;
+}>();
+const emit = defineEmits<{
+	(e: 'close'): void;
 }>();
 
 // define variables
@@ -132,17 +187,43 @@ const state = reactive({
 
 const dialogWidth = computed(() => (props.mode === 'edition' ? '720px' : '300px'));
 
-// Edition 功能对比矩阵（精选 7 条最有价值的差异项，不必枚举所有）
-const MAT_KEYS = ['Dag', 'Approval', 'Ha', 'Scan', 'Program', 'Ext', 'Support'] as const;
-const editionMatrix = computed(() =>
-	MAT_KEYS.map((k) => {
-		const name = t(`message.pages.edition.mat${k}Name`);
-		const desc = t(`message.pages.edition.mat${k}Desc`);
-		const ceText = t(`message.pages.edition.mat${k}Ce`);
-		const ee = t(`message.pages.edition.mat${k}Ee`);
-		const ce = ceText === '—' || ceText === '–' ? false : ceText;
-		return { name, desc, ce, ceText: ce ? ceText : ceText, ee };
-	})
+// ---------------- License 四态展示 ----------------
+const stateTagType = computed<'info' | 'success' | 'warning' | 'error'>(() => {
+	const s: LicenseState = license.value.state;
+	if (s === 'licensed') return 'success';
+	if (s === 'grace') return 'warning';
+	if (s === 'blocked') return 'error';
+	return 'info';
+});
+const stateLabel = computed(() => {
+	const map: Record<LicenseState, string> = {
+		free: t('message.pages.edition.stateFree'),
+		licensed: t('message.pages.edition.stateLicensed'),
+		grace: t('message.pages.edition.stateGrace'),
+		blocked: t('message.pages.edition.stateBlocked'),
+	};
+	return map[license.value.state] || map.free;
+});
+const tierLabel = computed(() => {
+	const tier: TierName = license.value.tier || 'community';
+	return t(`message.pages.edition.tier${tier.charAt(0).toUpperCase()}${tier.slice(1)}`);
+});
+const hostUsagePct = computed(() => {
+	const max = quota.value.max_hosts;
+	if (!max || max <= 0) return 0;
+	const used = license.value.hosts_used ?? 0;
+	return Math.min(100, Math.round((used / max) * 100));
+});
+
+// ---------------- 免费版 vs 商业授权 对比 ----------------
+const COMPARE_KEYS = ['Features', 'Hosts', 'Branding', 'Grace', 'Channels', 'Support'] as const;
+const compareRows = computed(() =>
+	COMPARE_KEYS.map((k) => ({
+		name: t(`message.pages.edition.cmp${k}Name`),
+		desc: t(`message.pages.edition.cmp${k}Desc`),
+		free: t(`message.pages.edition.cmp${k}Free`),
+		paid: t(`message.pages.edition.cmp${k}Paid`),
+	}))
 );
 
 // get layout config info
@@ -150,25 +231,14 @@ const getThemeConfig = computed(() => {
 	return themeConfig.value;
 });
 
-// 记录 CE banner 展示时间（每 7 天弹一次）
-const CE_BANNER_LAST_TS = 'taurus.ce_banner_last_shown_at';
-function _touchCeBannerShown() {
-	try {
-		Local.set(CE_BANNER_LAST_TS, Date.now());
-	} catch (_e) { /* noop */ }
-}
-
 // silently refuse
 const onCancel = () => {
 	state.isUpgrade = false;
 	Session.set('isUpgrade', false);
 	// 版本升级弹窗：必须持久化 version，否则每次刷新都会重弹
-	// edition 弹窗走下面的 _touchCeBannerShown（7 天节流）
 	if (props.mode === 'version') {
 		// @ts-ignore __VERSION__ 由 vite define 在编译时注入
 		Local.set('version', state.version || __VERSION__);
-	} else {
-		_touchCeBannerShown();
 	}
 };
 
@@ -185,7 +255,7 @@ const onVersionUpgrade = () => {
 	}, 2000);
 };
 
-// ==================================== Edition 升级按钮 ====================================
+// ==================================== 服务等级升级按钮 ====================================
 const onEditionUpgrade = () => {
 	state.isLoading = true;
 	setTimeout(() => {
@@ -197,7 +267,6 @@ const onEditionUpgrade = () => {
 			window.location.hash = (url || '/').replace(/^#/, '');
 		}
 		state.isLoading = false;
-		_touchCeBannerShown();
 		state.isUpgrade = false;
 	}, 800);
 };
@@ -206,7 +275,6 @@ const onContactSales = () => {
 	// 直接落到联系销售表单页
 	window.location.hash = '/taurus/contact-lead';
 	state.isUpgrade = false;
-	_touchCeBannerShown();
 };
 
 // ==================================== 自动弹出 ====================================
@@ -215,8 +283,7 @@ const delayShow = async () => {
 		await _ensureEdition(false);
 	}
 	const isUpgrade = Session.get('isUpgrade') === false ? Session.get('isUpgrade') : true;
-	// mode=edition：不管 Session.isUpgrade，按 App.vue showEditionBanner 控制是否 render；
-	//            这里只是延迟展示，避免进入首屏时闪
+	// mode=edition：由 App.vue showEditionBanner 控制是否 render；这里仅延迟展示避免首屏闪烁
 	const shownFlag = props.mode === 'edition' ? true : isUpgrade;
 	if (shownFlag) {
 		setTimeout(() => {
@@ -336,8 +403,82 @@ onMounted(() => {
 		}
 		.edition-content {
 			padding: 18px 24px 6px;
-			max-height: 440px;
+			max-height: 460px;
 			overflow-y: auto;
+			.edition-status {
+				display: flex;
+				align-items: center;
+				flex-wrap: wrap;
+				gap: 10px;
+				font-size: 13px;
+				.edition-status-tier {
+					font-weight: 600;
+					color: var(--el-text-color-primary, #303133);
+				}
+				.edition-status-customer {
+					color: var(--el-text-color-secondary, #909399);
+				}
+				.edition-status-meta {
+					flex-basis: 100%;
+					display: flex;
+					flex-wrap: wrap;
+					gap: 14px;
+					color: var(--el-text-color-secondary, #909399);
+					font-size: 12px;
+					.is-danger {
+						color: var(--el-color-danger);
+					}
+				}
+			}
+			.edition-warn {
+				margin-top: 12px;
+			}
+			.edition-quota {
+				margin-top: 14px;
+				padding: 12px 14px;
+				border-radius: 6px;
+				background: var(--el-fill-color-light, #f5f7fa);
+				font-size: 13px;
+				.edition-quota-usage {
+					display: flex;
+					align-items: center;
+					gap: 12px;
+					margin-top: 8px;
+					.edition-quota-bar {
+						flex: 1;
+						max-width: 320px;
+					}
+				}
+				.edition-quota-note {
+					margin-top: 6px;
+					font-size: 12px;
+					color: var(--el-text-color-secondary, #909399);
+				}
+			}
+			.edition-entitle {
+				margin-top: 14px;
+				font-size: 13px;
+				.edition-entitle-row {
+					display: flex;
+					padding: 6px 0;
+					border-bottom: 1px dashed var(--el-border-color-lighter, #ebeef5);
+					.k {
+						width: 96px;
+						flex-shrink: 0;
+						color: var(--el-text-color-secondary, #909399);
+					}
+					.v {
+						flex: 1;
+						color: var(--el-text-color-regular, #606266);
+					}
+				}
+			}
+			.edition-compare-title {
+				margin: 16px 0 8px;
+				font-size: 13px;
+				font-weight: 600;
+				color: var(--el-text-color-primary, #303133);
+			}
 			.edition-matrix {
 				border: 1px solid var(--el-border-color-lighter, #ebeef5);
 				border-radius: 6px;
@@ -345,7 +486,7 @@ onMounted(() => {
 				font-size: 13px;
 				.edition-matrix-row {
 					display: grid;
-					grid-template-columns: 1.8fr 0.7fr 0.9fr;
+					grid-template-columns: 1.8fr 0.9fr 0.9fr;
 					align-items: center;
 					padding: 10px 12px;
 					border-top: 1px solid var(--el-border-color-lighter, #ebeef5);
@@ -368,32 +509,9 @@ onMounted(() => {
 					.col-ce,
 					.col-ee {
 						text-align: center;
-						.muted {
-							color: var(--el-text-color-placeholder, #c0c4cc);
-						}
-					}
-				}
-			}
-			.edition-quota {
-				margin-top: 16px;
-				padding: 10px 14px;
-				border-radius: 6px;
-				background: var(--el-fill-color-light, #f5f7fa);
-				font-size: 12px;
-				ul {
-					margin: 6px 0 0 18px;
-					padding: 0;
-					li {
-						line-height: 22px;
 						color: var(--el-text-color-regular, #606266);
-						b {
-							color: var(--el-color-primary);
-						}
 					}
 				}
-			}
-			.edition-warn {
-				margin-top: 12px;
 			}
 		}
 	}

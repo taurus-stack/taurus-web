@@ -70,7 +70,7 @@ export default {
                     componentNamePlaceholder: 'Please enter component name',
                     linkUrlPlaceholder: 'Please enter external link URL',
                     remarkPlaceholder: 'Please enter remark',
-                    tokenTip: 'Enter {{token}} to automatically replace system token',
+                    tokenTip: 'Enter {\'{\'}{\'{\'}token{\'}\'}{\'}\'} to automatically replace system token',
                     alertLine1: '1. Red asterisk indicates required fields;',
                     alertLine2: '2. For directory type menus, the component path can be left empty;',
                     alertLine3: '3. For root node menus, the parent menu can be left empty;',

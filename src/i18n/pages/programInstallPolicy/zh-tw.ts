@@ -42,7 +42,7 @@ export default {
 					priorityPlaceholder: '數值越小優先級越高',
 					userPlaceholder: '空表示當前用戶',
 					groupPlaceholder: '運行用戶組',
-					matchRulesPlaceholder: 'JSON格式，如 {"host_type": "linux", "status": 1}',
+					matchRulesPlaceholder: 'JSON格式，如 {\'{\'}"host_type": "linux", "status": 1{\'}\'}',
 					configPlaceholder: 'JSON格式配置',
 				},
 				bool: {

@@ -4,41 +4,23 @@
 			:index="val.path"
 			:key="val.path"
 			v-if="val.children && val.children.length > 0"
-			:class="{ 'ee-gate-card': !!val.meta?._eeGate, 'is-ee-gate': !!val.meta?._eeGate }"
-			:title="val.meta?._eeGate ? eeTooltipTxt() : ''"
-			@click.stop="onSubMenuClick(val, $event)"
 		>
 			<template #title>
 				<SvgIcon :name="val.meta.icon" />
-				<span class="nav-menu-title">
-					{{ $t(val.meta.title) }}
-					<el-tag v-if="val.meta?._eeGate" size="small" type="warning" effect="plain" class="ee-menu-badge">EE</el-tag>
-				</span>
+				<span class="nav-menu-title">{{ $t(val.meta.title) }}</span>
 			</template>
 			<sub-item :chil="val.children" />
 		</el-sub-menu>
 		<template v-else>
-			<el-menu-item
-				:index="val.path"
-				:key="val.path"
-					:class="{ 'ee-gate-card': !!val.meta?._eeGate, 'is-ee-gate': !!val.meta?._eeGate }"
-				:title="val.meta?._eeGate ? eeTooltipTxt() : ''"
-				@click.stop="onMenuItemClick(val, $event)"
-			>
+			<el-menu-item :index="val.path" :key="val.path" @click="onMenuItemClick(val)">
 				<template v-if="!val.meta.isLink || (val.meta.isLink && val.meta.isIframe)">
 					<SvgIcon :name="val.meta.icon" />
-					<span class="nav-menu-title">
-						{{ $t(val.meta.title) }}
-						<el-tag v-if="val.meta?._eeGate" size="small" type="warning" effect="plain" class="ee-menu-badge">EE</el-tag>
-					</span>
+					<span class="nav-menu-title">{{ $t(val.meta.title) }}</span>
 				</template>
 				<template v-else>
 					<a class="w100" @click.prevent.stop="onALinkClick(val, $event)">
 						<SvgIcon :name="val.meta.icon" />
-						<span class="nav-menu-title">
-							{{ $t(val.meta.title) }}
-							<el-tag v-if="val.meta?._eeGate" size="small" type="warning" effect="plain" class="ee-menu-badge">EE</el-tag>
-						</span>
+						<span class="nav-menu-title">{{ $t(val.meta.title) }}</span>
 					</a>
 				</template>
 			</el-menu-item>
@@ -50,7 +32,6 @@
 import { computed } from 'vue';
 import { RouteRecordRaw } from 'vue-router';
 import other from '/@/utils/other';
-import { eeTooltipTxt, triggerUpgradeBanner } from '/@/editions/index';
 
 // define props passed from parent
 const props = defineProps({
@@ -64,33 +45,12 @@ const chils = computed(() => {
 	return <RouteItems>props.chil;
 });
 
-const onSubMenuClick = (val: any, e: MouseEvent) => {
-	if (val.meta?._eeGate) {
-		e.preventDefault();
-		e.stopImmediatePropagation();
-		triggerUpgradeBanner(val.meta?._eeCodes);
-		return false;
-	}
-};
-
-const onMenuItemClick = (val: any, e: MouseEvent) => {
-	if (val.meta?._eeGate) {
-		e.preventDefault();
-		e.stopImmediatePropagation();
-		triggerUpgradeBanner(val.meta?._eeCodes);
-		return false;
-	}
+const onMenuItemClick = (val: any) => {
 	if (!val.meta?.isLink || (val.meta?.isLink && val.meta?.isIframe)) return;
 	other.handleOpenLink(val);
 };
 
-const onALinkClick = (val: any, e: MouseEvent) => {
-	if (val.meta?._eeGate) {
-		e.preventDefault();
-		e.stopImmediatePropagation();
-		triggerUpgradeBanner(val.meta?._eeCodes);
-		return false;
-	}
+const onALinkClick = (val: any, _e?: MouseEvent) => {
 	other.handleOpenLink(val);
 };
 </script>
@@ -100,9 +60,5 @@ const onALinkClick = (val: any, e: MouseEvent) => {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-}
-.ee-menu-badge {
-	margin-left: 2px;
-	flex-shrink: 0;
 }
 </style>
